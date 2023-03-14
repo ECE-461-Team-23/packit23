@@ -8,8 +8,6 @@ terraform {
 }
 
 provider "google" {
-  credentials = file("${path.root}/../credentials/terraform_service_account_key.json")
-
   project = var.project_id
   region  = "us-east5"
   zone    = "us-east5-a"
