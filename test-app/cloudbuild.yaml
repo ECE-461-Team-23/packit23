@@ -20,5 +20,5 @@ steps:
 
   # 
   - name: "gcr.io/cloud-builders/gcloud"
-    args: ['beta', 'run', 'deploy', 'dashboard', '--image', "docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app:latest", '--region', 'us-central1', '--allow-unauthenticated', '--platform', 'managed']
+    args: ['beta', 'run', 'deploy', '--image', "docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app:latest", '--region', 'us-central1', '--allow-unauthenticated', '--platform', 'managed']
     #dir: "test-app/"
