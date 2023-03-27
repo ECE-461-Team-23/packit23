@@ -65,7 +65,7 @@ resource "google_cloud_run_service" "run_service" {
   template {
     spec {
       containers {
-        image = "us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app"
+        image = "us-central1-docker.pkg.dev/${var.project_id}/my-docker-repo/python-app:latest"
       }
     }
   }
