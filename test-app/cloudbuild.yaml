@@ -8,12 +8,12 @@ steps:
   # Docker Build
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 
-           'us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/myimage', 
+           'us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app', 
            '.']
     dir: "test-app/"
 
   # Docker Push
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 
-           'us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/myimage']
+           'us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app']
     dir: "test-app/"

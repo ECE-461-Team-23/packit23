@@ -50,3 +50,43 @@ resource "google_artifact_registry_repository" "my-repo" {
   description   = "example docker repository"
   format        = "DOCKER"
 }
+
+# Enables the Cloud Run API
+resource "google_project_service" "run_api" {
+  service = "run.googleapis.com"
+
+  disable_on_destroy = true
+}
+
+resource "google_cloud_run_service" "run_service" {
+  name = "app"
+  location = "us-central1"
+
+  template {
+    spec {
+      containers {
+        image = "us-central1-docker.pkg.dev/${PROJECT_ID}/my-docker-repo/python-app"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  # Waits for the Cloud Run API to be enabled
+  depends_on = [google_project_service.run_api]
+}
+
+# Allow unauthenticated users to invoke the service
+resource "google_cloud_run_service_iam_member" "run_all_users" {
+  service  = google_cloud_run_service.run_service.name
+  location = google_cloud_run_service.run_service.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+output "service_url" {
+  value = google_cloud_run_service.run_service.status[0].url
+}
