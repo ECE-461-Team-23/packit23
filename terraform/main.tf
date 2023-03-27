@@ -18,7 +18,7 @@ provider "google" {
 # }
 
 resource "google_cloudbuild_trigger" "app-trigger" {
-  location = "us-east1"
+  location = "us-central1"
 
   github {
     owner = "packit461"
@@ -28,12 +28,12 @@ resource "google_cloudbuild_trigger" "app-trigger" {
       branch = "terraform-container-build"
     }
   }
-  included_files = ["test-app/*"] # Only update container if the folder is updated
+  # included_files = ["test-app/*"] # Only update container if the folder is updated
 
   build {
     step {
       name = "gcr.io/cloud-builders/docker"
-      args = ["build", "-t", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA", "."]
+      args = ["build", "-t", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA", "test-app/"]
     }
     step {
       name = "gcr.io/cloud-builders/docker"
