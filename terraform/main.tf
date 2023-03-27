@@ -30,14 +30,23 @@ resource "google_cloudbuild_trigger" "app-trigger" {
   }
   # included_files = ["test-app/*"] # Only update container if the folder is updated
 
-  build {
-    step {
-      name = "gcr.io/cloud-builders/docker"
-      args = ["build", "-t", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA", "test-app/"]
-    }
-    step {
-      name = "gcr.io/cloud-builders/docker"
-      args = ["push", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA"]
-    }    
-  }
+  filename = "test-app/cloudbuild.yaml"
+
+  # build {
+  #   step {
+  #     name = "gcr.io/cloud-builders/docker"
+  #     args = ["build", "-t", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA", "test-app/"]
+  #   }
+  #   step {
+  #     name = "gcr.io/cloud-builders/docker"
+  #     args = ["push", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA"]
+  #   }    
+  # }
+}
+
+resource "google_artifact_registry_repository" "my-repo" {
+  location      = "us-central1"
+  repository_id = "my-docker-repo"
+  description   = "example docker repository"
+  format        = "DOCKER"
 }
