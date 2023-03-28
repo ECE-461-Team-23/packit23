@@ -13,10 +13,6 @@ provider "google" {
   zone    = "us-east1-a"
 }
 
-# resource "google_compute_network" "vpc_network" {
-#   name = "terraform-network"
-# }
-
 resource "google_cloudbuild_trigger" "app-trigger" {
   location = "us-central1"
 
@@ -28,34 +24,15 @@ resource "google_cloudbuild_trigger" "app-trigger" {
       branch = "terraform-container-build"
     }
   }
-  # included_files = ["test-app/*"] # Only update container if the folder is updated
 
   filename = "test-app/cloudbuild.yaml"
-
-  # build {
-  #   step {
-  #     name = "gcr.io/cloud-builders/docker"
-  #     args = ["build", "-t", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA", "test-app/"]
-  #   }
-  #   step {
-  #     name = "gcr.io/cloud-builders/docker"
-  #     args = ["push", "gcr.io/${var.project_id}/quickstart-image:$COMMIT_SHA"]
-  #   }    
-  # }
 }
 
-resource "google_artifact_registry_repository" "my-repo" {
+resource "google_artifact_registry_repository" "container-repo" {
   location      = "us-central1"
-  repository_id = "my-docker-repo"
-  description   = "example docker repository"
+  repository_id = "container-repo"
+  description   = "Repository to store containers and artifacts"
   format        = "DOCKER"
-}
-
-# Enables the Cloud Run API
-resource "google_project_service" "run_api" {
-  service = "run.googleapis.com"
-
-  disable_on_destroy = true
 }
 
 resource "google_cloud_run_service" "run_service" {
@@ -70,6 +47,7 @@ resource "google_cloud_run_service" "run_service" {
     }
   }
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service#metadata
+  # How to connect a container to a SQL database
 
   traffic {
     percent         = 100
@@ -77,7 +55,7 @@ resource "google_cloud_run_service" "run_service" {
   }
 
   # Waits for the Cloud Run API to be enabled
-  depends_on = [google_project_service.run_api]
+  depends_on = [google_project_service.cloud_run_api]
 }
 
 # Allow unauthenticated users to invoke the service
@@ -91,3 +69,22 @@ resource "google_cloud_run_service_iam_member" "run_all_users" {
 output "service_url" {
   value = google_cloud_run_service.run_service.status[0].url
 }
+
+
+## Enable services ##
+
+resource "google_project_service" "cloud_run_api" {
+  service = "run.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "cloud_build_api" {
+  service = "cloudbuild.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "artifact_registry_api" {
+  service = "artifactregistry.googleapis.com"
+  disable_on_destroy = true
+}
+
