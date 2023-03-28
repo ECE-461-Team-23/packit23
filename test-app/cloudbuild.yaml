@@ -1,4 +1,4 @@
-substitions:
+substitutions:
   _ARTIFACT_REGISTRY_REPO_NAME: "container-repo"
   _IMAGE_NAME: "python-app2"
 
