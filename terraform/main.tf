@@ -82,16 +82,6 @@ output "service_url" {
   value = google_cloud_run_service.run_service.status[0].url
 }
 
-resource "google_cloud_run_service_iam_member" "let_cloud_build_use_cloud_run" {
-  location = google_cloud_run_service.run_service.location
-  project = google_cloud_run_service.run_service.project
-  service = google_cloud_run_service.run_service.name
-  role = "roles/run.admin"
-  member = "serviceAccount:${data.google_project.project.number}@cloudbuild.gserviceaccount.com"
-}
-
-data "google_project" "project" {} # Used to let us get the project number
-
 ## Enable services ##
 
 resource "google_project_service" "cloud_run_api" {
