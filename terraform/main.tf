@@ -67,7 +67,6 @@ resource "google_cloud_run_service" "run_service" {
       containers {
         image = "us-central1-docker.pkg.dev/${var.project_id}/my-docker-repo/python-app:latest"
       }
-      container_concurrency = 0 # Thread safe, container manages the maximum number of connections
     }
   }
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service#metadata
