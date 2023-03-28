@@ -2,7 +2,10 @@
 locals {
   github_branch = "terraform-container-build"
   artifact_registry_repo_name = "container-repo"
+
+  # Test App
   test_app_cloud_run_name = "test-app"
+  test_app_image_name = "python-app2"
 }
 
 terraform {
@@ -50,7 +53,7 @@ resource "google_cloud_run_service" "run_service" {
   template {
     spec {
       containers {
-        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/python-app:latest"
+        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.test_app_image_name}:latest"
       }
     }
   }
