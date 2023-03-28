@@ -2,6 +2,7 @@
 locals {
   github_branch = "terraform-container-build"
   artifact_registry_repo_name = "container-repo"
+  test_app_cloud_run_name = "test-app"
 }
 
 terraform {
@@ -43,7 +44,7 @@ resource "google_artifact_registry_repository" "container-repo" {
 }
 
 resource "google_cloud_run_service" "run_service" {
-  name = "test-app"
+  name = local.test_app_cloud_run_name
   location = "us-central1"
 
   template {
