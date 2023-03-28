@@ -38,6 +38,8 @@ resource "google_cloudbuild_trigger" "app-trigger" {
   }
 
   filename = "test-app/cloudbuild.yaml"
+
+  depends_on = [google_project_service.cloud_build_api]
 }
 
 resource "google_artifact_registry_repository" "container-repo" {
@@ -45,6 +47,8 @@ resource "google_artifact_registry_repository" "container-repo" {
   repository_id = local.artifact_registry_repo_name
   description   = "Repository to store containers and artifacts"
   format        = "DOCKER"
+
+  depends_on = [google_project_service.artifact_registry_api]
 }
 
 resource "google_cloud_run_service" "run_service" {
@@ -66,9 +70,18 @@ resource "google_cloud_run_service" "run_service" {
     latest_revision = true
   }
 
-  # Waits for the Cloud Run API to be enabled
-  depends_on = [google_project_service.cloud_run_api]
+  
+  depends_on = [google_project_service.cloud_run_api,  # Waits for the Cloud Run API to be enabled
+                time_sleep.wait]
 }
+
+resource "time_sleep" "wait" {
+  depends_on = [google_project_service.cloud_run_api] # Start wait after API is ready
+  create_duration = "2m" #30s for 30 seconds, 2m for 2 minutes
+  # In the future, we could use terraform's "local-exec" to send a 
+}
+
+
 
 # Allow unauthenticated users to invoke the Cloud Run service
 resource "google_cloud_run_service_iam_member" "run_all_users" {
