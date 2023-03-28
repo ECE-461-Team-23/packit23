@@ -1,3 +1,9 @@
+# Settings
+locals {
+  github_branch = "terraform-container-build"
+  artifact_registry_repo_name = "container-repo"
+}
+
 terraform {
   required_providers {
     google = {
@@ -9,10 +15,11 @@ terraform {
 
 provider "google" {
   project = var.project_id
-  region  = "us-east1"
-  zone    = "us-east1-a"
+  region  = "us-central1"
+  zone    = "us-central1-a"
 }
 
+# Automatically build container for test-app
 resource "google_cloudbuild_trigger" "app-trigger" {
   location = "us-central1"
 
@@ -21,7 +28,7 @@ resource "google_cloudbuild_trigger" "app-trigger" {
     name = "packit23"
 
     push {
-      branch = "terraform-container-build"
+      branch = local.github_branch
     }
   }
 
@@ -29,20 +36,20 @@ resource "google_cloudbuild_trigger" "app-trigger" {
 }
 
 resource "google_artifact_registry_repository" "container-repo" {
-  location      = "us-central1"
-  repository_id = "container-repo"
+  location = "us-central1"
+  repository_id = local.artifact_registry_repo_name
   description   = "Repository to store containers and artifacts"
   format        = "DOCKER"
 }
 
 resource "google_cloud_run_service" "run_service" {
-  name = "app"
+  name = "test-app"
   location = "us-central1"
 
   template {
     spec {
       containers {
-        image = "us-central1-docker.pkg.dev/${var.project_id}/my-docker-repo/python-app:latest"
+        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/python-app:latest"
       }
     }
   }
@@ -58,7 +65,7 @@ resource "google_cloud_run_service" "run_service" {
   depends_on = [google_project_service.cloud_run_api]
 }
 
-# Allow unauthenticated users to invoke the service
+# Allow unauthenticated users to invoke the Cloud Run service
 resource "google_cloud_run_service_iam_member" "run_all_users" {
   service  = google_cloud_run_service.run_service.name
   location = google_cloud_run_service.run_service.location
