@@ -58,7 +58,8 @@ resource "google_cloud_run_service" "run_service" {
   template {
     spec {
       containers {
-        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.test_app_image_name}:latest"
+        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        # "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.test_app_image_name}:latest"
       }
     }
   }
@@ -71,14 +72,7 @@ resource "google_cloud_run_service" "run_service" {
   }
 
   
-  depends_on = [google_project_service.cloud_run_api,  # Waits for the Cloud Run API to be enabled
-                time_sleep.wait]
-}
-
-resource "time_sleep" "wait" {
-  depends_on = [google_project_service.cloud_run_api] # Start wait after API is ready
-  create_duration = "2m" #30s for 30 seconds, 2m for 2 minutes
-  # In the future, we could use terraform's "local-exec" to send a 
+  depends_on = [google_project_service.cloud_run_api]  # Waits for the Cloud Run API to be enabled
 }
 
 
