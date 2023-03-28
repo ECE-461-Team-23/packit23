@@ -23,6 +23,10 @@ steps:
            'us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_TEST_APP_IMAGE_NAME}']
     dir: "test-app/"
 
-  # Redeploy with new build
+  # Redeploy with new build (only updates the image)
   - name: "gcr.io/cloud-builders/gcloud"
-    args: ['beta', 'run', 'deploy', '${_TEST_APP_CLOUD_RUN_NAME}', '--image', "us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_TEST_APP_IMAGE_NAME}:latest", '--region', 'us-central1', '--allow-unauthenticated', '--platform', 'managed']
+    args: ['beta', 'run', 'deploy', '${_TEST_APP_CLOUD_RUN_NAME}', 
+            '--image', "us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_TEST_APP_IMAGE_NAME}:latest",
+            '--region', 'us-central1'] 
+            # '--allow-unauthenticated', 
+            # '--platform', 'managed']
