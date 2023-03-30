@@ -1,0 +1,86 @@
+name: ci
+run-name: Testing and integration
+on: [push]
+jobs:
+  lint-test-python-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install python dependencies
+        run: pip install Flask pylint black pytest pytest-cov
+
+      - name: Lint python backend with black & pylint
+        run: |
+          python -m black delete_write_apis/*.py
+          python -m pylint --fail-under=8 delete_write_apis/*.py
+
+      - name: Test backend apis
+        run: |
+          python -m pytest delete_write_apis/ --cov --cov-report=html:coverage_delete
+
+  lint-go-rater-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lint rater with Go fmt
+        run: gofmt -w -s package_rater/
+      - name: Lint go backend
+        run: gofmt -w -s read_apis/
+
+  test-rater:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run install
+        run: ./package_rater/run install
+      - name: Run build
+        run: ./package_rater/run build
+      - name: Run Test
+        run: ./package_rater/run test
+      - name: Set env
+        run: |
+          cd package_rater/
+          echo "ABSFILEPATH=$(readlink -f package_rater/url.txt)" >> $GITHUB_ENV
+      - name: Run URL_FILE
+        run: ./package_rater/run "${ABSFILEPATH}"
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-go-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test read apis
+        run: |
+          cd read_apis/
+          go test -v ./... -cover
+
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build package rater container 
+        run: |
+          docker build package_rater/ -t package_rater_img
+          docker run -p 8080:8080 --name package_rater_container package_rater_img
+      - name: Build delete/write container 
+        run: |
+          docker build delete_write_apis/ -t delete_write_img
+          docker run -p 8080:8080 --name delete_write_container delete_write_img
+      - name: Build read container
+        run: |
+          docker build read_apis/ -t read_img
+          docker run -p 8080:8080 --name read_container read_img
+      - name: Test running containers
+        run: |
+          echo "Include a script for integration testing"
+
+# possibly make a single script (python file for integration testing) possibly with mock database
+# jobs (test-go-backend, integration-test...) are handled with different machines therefore
+# running integration test must be done with running containers in this last job
+    

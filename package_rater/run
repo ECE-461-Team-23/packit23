@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ -z $GITHUB_TOKEN ]]; then
+    echo "GITHUB_TOKEN is not set"
+else
+  if [ $1 = "build" ]; then
+    go build -o main cmd/main.go
+    if [ $? -eq 0 ]; then
+      echo "Build succeeded"
+    else
+      echo "Build failed"
+    fi
+  elif [ $1 = "install" ]; then
+    go mod download
+    ./main install
+  elif [[ $1 == *"/"* ]]; then
+    ./main $1
+  elif [[ $1 == "test" ]]; then
+    go test ./... -cover
+  else
+    echo "Invalid argument. Usage: $0 [build | install | test | "URL File"]"
+  fi
+fi

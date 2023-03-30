@@ -1,0 +1,10 @@
+{"metric":"RAMP_UP_SCORE", "api":"graphql", "filepath":"api/api.go", "line":198}
+
+{"metric":"CORRECTNESS_SCORE", "api":"graphql", "filepath":"api/api.go", "line":180}
+
+{"metric":"BUS_FACTOR_SCORE", "api":"rest", "filepath":"api/api.go", "line":148}
+
+{"metric":"RESPONSIVENESS_MAINTAINER_SCORE", "api":"rest", "filepath":"api/api.go", "line":115}
+
+{"metric":"LICENSE_SCORE", "api":"graphql", "filepath":"api/api.go", "line":198}
+
