@@ -2,7 +2,7 @@ package scorer
 
 import (
 	"fmt"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/models"
+	"github.com/packit461/packit23/package_rater/internal/models"
 	"testing"
 )
 

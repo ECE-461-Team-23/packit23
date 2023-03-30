@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/config"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/error"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/logger"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/parser"
+	"github.com/packit461/packit23/package_rater/internal/config"
+	"github.com/packit461/packit23/package_rater/internal/error"
+	"github.com/packit461/packit23/package_rater/internal/logger"
+	"github.com/packit461/packit23/package_rater/internal/parser"
 )
 
 func main() {

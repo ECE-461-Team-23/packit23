@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	api "github.com/packit461/packit23/tree/containerized-app/package_rater/github_apis"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/models"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/scorer"
+	api "github.com/packit461/packit23/package_rater/github_apis"
+	"github.com/packit461/packit23/package_rater/internal/models"
+	"github.com/packit461/packit23/package_rater/internal/scorer"
 
 	"github.com/patrickmn/go-cache"
 

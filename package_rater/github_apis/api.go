@@ -9,10 +9,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/config"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/error"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/helper"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/models"
+	"github.com/packit461/packit23/package_rater/internal/config"
+	"github.com/packit461/packit23/package_rater/internal/error"
+	"github.com/packit461/packit23/package_rater/internal/helper"
+	"github.com/packit461/packit23/package_rater/internal/models"
 
 	"github.com/google/go-github/github"
 	"github.com/patrickmn/go-cache"

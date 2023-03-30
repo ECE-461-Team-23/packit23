@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
-	"github.com/packit461/packit23/tree/containerized-app/package_rater/internal/logger"
+	"github.com/packit461/packit23/package_rater/internal/logger"
 )
 
 func Base64Decode(str string) string { // function to decode a base64 encoded string
