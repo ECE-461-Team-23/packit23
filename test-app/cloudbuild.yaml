@@ -4,12 +4,6 @@ substitutions:
   _TEST_APP_CLOUD_RUN_NAME: "test-app"
 
 steps:
-  # Install dependencies
-  - name: python
-    entrypoint: pip
-    args: ["install", "-r", "requirements.txt", "--user"]
-    dir: "test-app/"
-
   # Docker Build
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 
