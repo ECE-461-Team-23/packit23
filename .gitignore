@@ -6,7 +6,7 @@ function-source
 
 
 # Also include lock file, because we will use Terraform cloud
-.terraform.lock.hcl
+terraform/.terraform.lock.hcl
 
 # Local .terraform directories
 **/.terraform/*
