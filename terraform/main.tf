@@ -24,6 +24,14 @@ provider "google" {
   zone    = "us-central1-a"
 }
 
+resource "google_artifact_registry_repository" "container-repo" {
+  location = "us-central1"
+  repository_id = local.artifact_registry_repo_name
+  description   = "Repository to store containers and artifacts"
+  format        = "DOCKER"
+  depends_on = [google_project_service.artifact_registry_api]
+}
+
 # Automatically build container for test-app
 resource "google_cloudbuild_trigger" "app-trigger" {
   location = "us-central1"
@@ -38,19 +46,10 @@ resource "google_cloudbuild_trigger" "app-trigger" {
   }
 
   filename = "test-app/cloudbuild.yaml"
-
   depends_on = [google_project_service.cloud_build_api]
 }
 
-resource "google_artifact_registry_repository" "container-repo" {
-  location = "us-central1"
-  repository_id = local.artifact_registry_repo_name
-  description   = "Repository to store containers and artifacts"
-  format        = "DOCKER"
-
-  depends_on = [google_project_service.artifact_registry_api]
-}
-
+# Run containers for test-app (container image is overwritten in cloudbuild.yaml)
 resource "google_cloud_run_service" "run_service" {
   name = local.test_app_cloud_run_name
   location = "us-central1"
@@ -71,11 +70,8 @@ resource "google_cloud_run_service" "run_service" {
     latest_revision = true
   }
 
-  
   depends_on = [google_project_service.cloud_run_api]  # Waits for the Cloud Run API to be enabled
 }
-
-
 
 # Allow unauthenticated users to invoke the Cloud Run service
 resource "google_cloud_run_service_iam_member" "run_all_users" {
