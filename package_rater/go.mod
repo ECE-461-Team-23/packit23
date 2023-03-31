@@ -1,8 +1,3 @@
-<<<<<<< HEAD:go.mod
-module github.com/packit461/packit23
-
-go 1.19
-=======
 module github.com/packit461/packit23/package_rater
 
 go 1.19
@@ -43,4 +38,3 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 )
->>>>>>> origin/main:package_rater/go.mod
