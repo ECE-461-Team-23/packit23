@@ -3,3 +3,9 @@ variable "project_id" {
   type        = string
   sensitive   = true
 }
+
+variable "github_token" {
+  description = "Github API Token"
+  type        = string
+  sensitive   = true
+}
