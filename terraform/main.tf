@@ -1,7 +1,7 @@
 # Settings
 locals {
   # General
-  github_branch = "terraform-container-build"
+  github_branch = "containerize_package_rater"
   artifact_registry_repo_name = "container-repo"
 
   # package-rater-app
@@ -70,7 +70,7 @@ resource "google_cloud_run_service" "run_service" {
         }
         env {
           name = "LOG_FILE"
-          value = "."
+          value = "/var/log/output.log"
         }
         env {
           name = "LOG_LEVEL"
