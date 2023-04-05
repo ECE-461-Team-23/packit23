@@ -77,7 +77,16 @@ resource "google_cloud_run_service" "run_service" {
           value = "2"
         }
       }
+
+      timeout_seconds = 90
+      container_concurrency = 5
       service_account_name = google_service_account.package_rater_service_account.email
+    }
+
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale" = "10"
+      }
     }
   }
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service#metadata
