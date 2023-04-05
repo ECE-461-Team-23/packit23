@@ -40,8 +40,8 @@ func handle_request(w http.ResponseWriter, r *http.Request, logger *zap.Logger) 
 	logger.Info(fmt.Sprintf("Body:\n%s\n", body))
 
 	// Validate request
-	if r.Method != "GET" {
-		logger.Warn(fmt.Sprintf("Rejecting packet, not a GET method. It is a: %s\n", r.Method))
+	if r.Method != "POST" {
+		logger.Warn(fmt.Sprintf("Rejecting packet, not a POST method. It is a: %s\n", r.Method))
 		return_error_packet(w, r)
 		return
 	}
@@ -92,4 +92,5 @@ func main() {
 	})
 
 	logger.Fatal(http.ListenAndServe(":8080", nil).Error())
+	os.Exit(1)
 }
