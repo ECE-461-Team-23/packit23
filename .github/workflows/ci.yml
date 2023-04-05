@@ -1,6 +1,8 @@
 name: ci
 run-name: Testing and integration
-on: [push]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
 jobs:
   lint-test-python-backend:
     runs-on: ubuntu-latest
