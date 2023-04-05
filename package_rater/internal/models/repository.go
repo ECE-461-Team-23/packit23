@@ -88,3 +88,24 @@ func ShowResults(repos []*Repository) {
 		fmt.Println(string(b))
 	}
 }
+
+func ReturnResult(repo *Repository) (string) {
+	data := Package{
+		Url:                       repo.Url,
+		NetPercentage:             float64(int(repo.NetPercentage)) / 100,
+		RampUpTimeScore:           float64(int(repo.RampUpTimeScore*100)) / 100,
+		CorrectnessScore:          float64(int(repo.CorrectnessScore*100)) / 100,
+		BusFactorScore:            float64(int(repo.BusFactorScore*100)) / 100,
+		ResponsivenessScore:       float64(int(repo.ResponsivenessScore*100)) / 100,
+		LicenseCompatibilityScore: float64(int(repo.LicenseCompatibilityScore*100)) / 100,
+		VersionScore:              float64(int(repo.VersionScore*100)) / 100,
+	}
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println("error formatting result:", err)
+		return ""
+	}
+
+	return string(b)
+}
