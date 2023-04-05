@@ -45,7 +45,7 @@ resource "google_cloudbuild_trigger" "package_rater_app_trigger" {
     }
   }
 
-  filename = "package-rater-app/cloudbuild.yaml"
+  filename = "package_rater/cloudbuild.yaml"
   depends_on = [google_project_service.cloud_build_api]
 }
 
