@@ -127,12 +127,12 @@ resource "random_id" "db_name_suffix" {
   byte_length = 4
 }
 
-resource "google_sql_user" "read-user" {
-  name     = "read-user"
-  instance = local.google_sql_database_instance
-  host     = "%"
-  password = "strongpassword"
-}
+# resource "google_sql_user" "read-user" {
+#   name     = "read-user"
+#   instance = local.google_sql_database_instance
+#   host     = "%"
+#   password = "strongpassword"
+# }
 
 # Run containers for test-app (container image is overwritten in cloudbuild.yaml)
 # resource "google_cloud_run_service" "run_service" {
