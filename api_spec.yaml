@@ -1,0 +1,747 @@
+---
+openapi: 3.0.2
+info:
+  title: ECE 461 - Spring 2023 - Project 2
+  version: 2.1.0
+  description: "API for ECE 461/Spring 2023/Project 2: A Trustworthy Module Registry"
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Prof. Davis
+    url: http://davisjam.github.io
+    email: davisjam@purdue.edu
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+paths:
+  /packages:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/PackageQuery'
+        required: true
+      parameters:
+      - name: offset
+        description: "Provide this for pagination. If not provided, returns the first\
+          \ page of results."
+        schema:
+          $ref: '#/components/schemas/EnumerateOffset'
+        in: query
+        required: false
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+        "200":
+          headers:
+            offset:
+              schema:
+                $ref: '#/components/schemas/EnumerateOffset'
+              examples:
+                ExampleRequest:
+                  value: "3"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageMetadata'
+              examples:
+                ExampleResponse:
+                  value:
+                  - Version: 1.2.3
+                    Name: Underscore
+                  - Version: 1.2.3-2.1.0
+                    Name: Lodash
+                  - Version: ^1.2.3
+                    Name: React
+          description: List of packages
+        "400":
+          description: "There is missing field(s) in the PackageQuery/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "413":
+          description: Too many packages returned.
+      operationId: PackagesList
+      summary: Get the packages from the registry.
+      description: |-
+        Get any packages fitting the query.
+        Search for packages satisfying the indicated query.
+
+        If you want to enumerate all packages, provide an array with a single PackageQuery whose name is "*".
+
+        The response is paginated; the response header includes the offset to use in the next query.
+    parameters:
+    - name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /reset:
+    delete:
+      responses:
+        "200":
+          description: Registry is reset.
+        "400":
+          description: "There is missing field(s) in the AuthenticationToken or it\
+            \ is formed improperly, or the AuthenticationToken is invalid."
+        "401":
+          description: You do not have permission to reset the registry.
+      operationId: RegistryReset
+      summary: Reset the registry
+      description: Reset the registry to a system default state.
+    parameters:
+    - name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /package/{id}:
+    get:
+      parameters:
+      - name: id
+        description: ID of package to fetch
+        schema:
+          $ref: '#/components/schemas/PackageID'
+        in: path
+        required: true
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+              examples:
+                ExampleResponse:
+                  value:
+                    metadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    data:
+                      Content: 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
+                      URL: https://github.com/jashkenas/underscore
+                      JSProgram: |
+                        if (process.argv.length === 7) {
+                        console.log('Success')
+                        process.exit(0)
+                        } else {
+                        console.log('Failed')
+                        process.exit(1)
+                        }
+                ExampleResponse2:
+                  value:
+                    metadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    data:
+                      Content: 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
+                      JSProgram: |
+                        if (process.argv.length === 7) {
+                        console.log('Success')
+                        process.exit(0)
+                        } else {
+                        console.log('Failed')
+                        process.exit(1)
+                        }
+          description: Return the package. Content is required.
+        "400":
+          description: "There is missing field(s) in the PackageID/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: Package does not exist.
+      operationId: PackageRetrieve
+      summary: Interact with the package with this ID
+      description: Return this package.
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Package'
+        required: true
+      parameters:
+      - name: id
+        description: ""
+        schema:
+          $ref: '#/components/schemas/PackageID'
+        in: path
+        required: true
+      responses:
+        "200":
+          description: Version is updated.
+        "400":
+          description: "There is missing field(s) in the PackageID/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: Package does not exist.
+      operationId: PackageUpdate
+      summary: Update this content of the package.
+      description: |-
+        The name, version, and ID must match.
+
+        The package contents (from PackageData) will replace the previous contents.
+    delete:
+      parameters:
+      - name: id
+        description: Package ID
+        schema:
+          $ref: '#/components/schemas/PackageID'
+        in: path
+        required: true
+      responses:
+        "200":
+          description: Package is deleted.
+        "400":
+          description: "There is missing field(s) in the PackageID/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: Package does not exist.
+      operationId: PackageDelete
+      summary: Delete this version of the package.
+    parameters:
+    - examples:
+        ExampleID:
+          value: underscore
+      name: id
+      description: Package ID
+      schema:
+        $ref: '#/components/schemas/PackageID'
+      in: path
+      required: true
+    - examples:
+        ExampleToken:
+          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /package:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PackageData'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Package'
+              examples:
+                ExampleResponse:
+                  value:
+                    metadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    data:
+                      Content: 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
+                      JSProgram: |
+                        if (process.argv.length === 7) {
+                        console.log('Success')
+                        process.exit(0)
+                        } else {
+                        console.log('Failed')
+                        process.exit(1)
+                        }
+          description: Success. Check the ID in the returned metadata for the official
+            ID.
+        "400":
+          description: "There is missing field(s) in the PackageData/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "409":
+          description: Package exists already.
+        "424":
+          description: Package is not uploaded due to the disqualified rating.
+      operationId: PackageCreate
+    parameters:
+    - name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /package/{id}/rate:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageRating'
+          description: Return the rating. Only use this if each metric was computed
+            successfully.
+        "400":
+          description: "There is missing field(s) in the PackageID/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: Package does not exist.
+        "500":
+          description: The package rating system choked on at least one of the metrics.
+      operationId: PackageRate
+    parameters:
+    - name: id
+      schema:
+        $ref: '#/components/schemas/PackageID'
+      in: path
+      required: true
+    - name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /authenticate:
+    summary: Authenticate this user -- get an access token.
+    description: |-
+      If your system supports the authentication scheme described in the spec, then:
+
+      1. The obtained token should be provided to the other endpoints via the "X-Authorization" header.
+      2. The "Authorization" header is *required* in your system.
+
+      Otherwise, this endpoint should return HTTP 501 "Not implemented", and the "X-Authorization" header should be unused for the other endpoints.
+    put:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+            examples:
+              ExampleRequest:
+                value:
+                  User:
+                    name: ece30861defaultadminuser
+                    isAdmin: true
+                  Secret:
+                    password: correcthorsebatterystaple123(!__+@**(A’”`;DROP TABLE
+                      packages;
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationToken'
+              examples:
+                ExampleResponse:
+                  value: '"bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"'
+          description: Return an AuthenticationToken.
+        "400":
+          description: There is missing field(s) in the AuthenticationRequest or it
+            is formed improperly.
+        "401":
+          description: The user or password is invalid.
+        "501":
+          description: This system does not support authentication.
+      operationId: CreateAuthToken
+      description: Create an access token.
+  /package/byName/{name}:
+    get:
+      parameters:
+      - examples:
+          ExampleToken:
+            value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+        name: X-Authorization
+        description: ""
+        schema:
+          $ref: '#/components/schemas/AuthenticationToken'
+        in: header
+        required: true
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageHistoryEntry'
+              examples:
+                zaza:
+                  value:
+                  - User:
+                      name: James Davis
+                      isAdmin: true
+                    Date: 2023-03-23T23:11:15Z
+                    PackageMetadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    Action: DOWNLOAD
+                  - User:
+                      name: James Davis
+                      isAdmin: true
+                    Date: 2023-03-22T23:06:25Z
+                    PackageMetadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    Action: UPDATE
+                  - User:
+                      name: James Davis
+                      isAdmin: true
+                    Date: 2023-03-21T22:59:40Z
+                    PackageMetadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    Action: RATE
+                  - User:
+                      name: James Davis
+                      isAdmin: true
+                    Date: 2023-03-20T22:45:31Z
+                    PackageMetadata:
+                      Name: Underscore
+                      Version: 1.0.0
+                      ID: underscore
+                    Action: CREATE
+          description: Return the package history.
+        "400":
+          description: "There is missing field(s) in the PackageName/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: No such package.
+      operationId: PackageByNameGet
+      description: Return the history of this package (all versions).
+    delete:
+      parameters:
+      - name: name
+        schema:
+          $ref: '#/components/schemas/PackageName'
+        in: path
+        required: true
+      responses:
+        "200":
+          description: Package is deleted.
+        "400":
+          description: "There is missing field(s) in the PackageName/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: Package does not exist.
+      operationId: PackageByNameDelete
+      summary: Delete all versions of this package.
+    parameters:
+    - examples:
+        ExampleName:
+          value: Underscore
+      name: name
+      schema:
+        $ref: '#/components/schemas/PackageName'
+      in: path
+      required: true
+    - examples:
+        ExampleToken:
+          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+  /package/byRegEx:
+    post:
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              $ref: '#/components/schemas/PackageRegEx'
+            examples:
+              ExampleRegEx:
+                value: .*?Underscore.*
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PackageMetadata'
+              examples:
+                ExampleResponse:
+                  value:
+                  - Version: 1.2.3
+                    Name: Underscore
+                  - Version: 1.2.3-2.1.0
+                    Name: Lodash
+                  - Version: ^1.2.3
+                    Name: React
+          description: Return a list of packages.
+        "400":
+          description: "There is missing field(s) in the PackageRegEx/AuthenticationToken\
+            \ or it is formed improperly, or the AuthenticationToken is invalid."
+        "404":
+          description: No package found under this regex.
+      operationId: PackageByRegExGet
+      summary: Get any packages fitting the regular expression.
+      description: Search for a package using regular expression over package names
+        and READMEs. This is similar to search by name.
+    parameters:
+    - examples:
+        ExampleToken:
+          value: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+      name: X-Authorization
+      description: ""
+      schema:
+        $ref: '#/components/schemas/AuthenticationToken'
+      in: header
+      required: true
+components:
+  schemas:
+    Error:
+      required:
+      - code
+      - message
+      properties:
+        code:
+          format: int32
+          type: integer
+        message:
+          type: string
+    Package:
+      required:
+      - metadata
+      - data
+      type: object
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PackageMetadata'
+          description: ""
+        data:
+          $ref: '#/components/schemas/PackageData'
+          description: ""
+    PackageMetadata:
+      description: |-
+        The "Name" and "Version" are used as a unique identifier pair when uploading a package.
+
+        The "ID" is used as an internal identifier for interacting with existing packages.
+      required:
+      - Name
+      - Version
+      - ID
+      type: object
+      properties:
+        Name:
+          $ref: '#/components/schemas/PackageName'
+          description: Package name
+          example: my-package
+        Version:
+          description: Package version
+          type: string
+          example: 1.2.3
+        ID:
+          $ref: '#/components/schemas/PackageID'
+          description: "Unique ID for use with the /package/{id} endpoint."
+          example: "123567192081501"
+    PackageData:
+      description: |-
+        This is a "union" type.
+        - On package upload, either Content or URL should be set.
+        - On package update, exactly one field should be set.
+        - On download, the Content field should be set.
+      type: object
+      properties:
+        Content:
+          description: |-
+            Package contents. This is the zip file uploaded by the user. (Encoded as text using a Base64 encoding).
+
+            This will be a zipped version of an npm package's GitHub repository, minus the ".git/" directory." It will, for example, include the "package.json" file that can be used to retrieve the project homepage.
+
+            See https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage.
+          type: string
+        URL:
+          description: Package URL (for use in public ingest).
+          type: string
+        JSProgram:
+          description: A JavaScript program (for use with sensitive modules).
+          type: string
+    User:
+      description: ""
+      required:
+      - name
+      - isAdmin
+      type: object
+      properties:
+        name:
+          description: ""
+          type: string
+          example: Alfalfa
+        isAdmin:
+          description: Is this user an admin?
+          type: boolean
+    UserAuthenticationInfo:
+      description: Authentication info for a user
+      required:
+      - password
+      type: object
+      properties:
+        password:
+          description: "Password for a user. Per the spec, this should be a \"strong\"\
+            \ password."
+          type: string
+    PackageID:
+      description: ""
+      type: string
+    PackageRating:
+      description: |-
+        Package rating (cf. Project 1).
+
+        If the Project 1 that you inherited does not support one or more of the original properties, denote this with the value "-1".
+      required:
+      - RampUp
+      - Correctness
+      - BusFactor
+      - ResponsiveMaintainer
+      - LicenseScore
+      - GoodPinningPractice
+      - PullRequest
+      - NetScore
+      type: object
+      properties:
+        BusFactor:
+          format: double
+          description: ""
+          type: number
+        Correctness:
+          format: double
+          description: ""
+          type: number
+        RampUp:
+          format: double
+          description: ""
+          type: number
+        ResponsiveMaintainer:
+          format: double
+          description: ""
+          type: number
+        LicenseScore:
+          format: double
+          description: ""
+          type: number
+        GoodPinningPractice:
+          format: double
+          description: "The fraction of its dependencies that are pinned to at least\
+            \ a specific major+minor version, e.g. version 2.3.X of a package. (If\
+            \ there are zero dependencies, they should receive a 1.0 rating. If there\
+            \ are two dependencies, one pinned to this degree, then they should receive\
+            \ a Â½ = 0.5 rating)."
+          type: number
+        PullRequest:
+          format: double
+          description: The fraction of project code that was introduced through pull
+            requests with a code review.
+          type: number
+        NetScore:
+          format: double
+          description: From Part 1
+          type: number
+    PackageHistoryEntry:
+      description: One entry of the history of this package.
+      required:
+      - User
+      - Date
+      - PackageMetadata
+      - Action
+      type: object
+      properties:
+        User:
+          $ref: '#/components/schemas/User'
+          description: ""
+        Date:
+          format: date-time
+          description: Date of activity using ISO-8601 Datetime standard in UTC format.
+          type: string
+          example: 2023-03-23T23:11:15Z
+        PackageMetadata:
+          $ref: '#/components/schemas/PackageMetadata'
+          description: ""
+        Action:
+          description: ""
+          enum:
+          - CREATE
+          - UPDATE
+          - DOWNLOAD
+          - RATE
+          type: string
+    PackageName:
+      description: |-
+        Name of a package.
+
+        - Names should only use typical "keyboard" characters.
+        - The name "*" is reserved. See the `/packages` API for its meaning.
+      type: string
+    AuthenticationToken:
+      description: "The spec permits you to use any token format you like. You could,\
+        \ for example, look into JSON Web Tokens (\"JWT\", pronounced \"jots\"): https://jwt.io."
+      type: string
+    AuthenticationRequest:
+      description: ""
+      required:
+      - User
+      - Secret
+      type: object
+      properties:
+        User:
+          $ref: '#/components/schemas/User'
+          description: ""
+        Secret:
+          $ref: '#/components/schemas/UserAuthenticationInfo'
+          description: ""
+    SemverRange:
+      description: ""
+      type: string
+      example: |-
+        Exact (1.2.3)
+        Bounded range (1.2.3-2.1.0)
+        Carat (^1.2.3)
+        Tilde (~1.2.0)
+    PackageQuery:
+      description: ""
+      required:
+      - Name
+      type: object
+      properties:
+        Version:
+          $ref: '#/components/schemas/SemverRange'
+          description: ""
+        Name:
+          $ref: '#/components/schemas/PackageName'
+          description: ""
+    EnumerateOffset:
+      description: Offset in pagination.
+      type: string
+      example: "1"
+    PackageRegEx:
+      description: A regular expression over package names and READMEs that is used
+        for searching for a package.
+      type: string
+  securitySchemes:
+    UserAndPasswordYieldsToken:
+      type: apiKey
+      description: Use the /authentication endpoint to obtain an authorization token.
+      name: X-Authorization
+      in: header

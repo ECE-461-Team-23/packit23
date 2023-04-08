@@ -105,6 +105,27 @@ resource "google_project_service" "artifact_registry_api" {
   disable_on_destroy = true
 }
 
+resource "google_api_gateway_api" "api" {
+  provider = google-beta
+  api_id = "my-api"
+}
+
+resource "google_api_gateway_api_config" "api_cfg" {
+  provider = google-beta
+  api = google_api_gateway_api.api_cfg.api_id
+  api_config_id = "api-config"
+
+  openapi_documents {
+    document {
+      path = "api_spec.yaml"
+      contents = filebase64("test-fixtures/apigateway/openapi.yaml")
+    }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 # SQL
 resource "google_sql_database_instance" "mysql-instance" {
   name             = local.google_sql_database_instance
