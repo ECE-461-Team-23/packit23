@@ -24,3 +24,5 @@ steps:
             '--region', 'us-central1'] 
             # '--allow-unauthenticated', 
             # '--platform', 'managed']
+options:
+  logging: CLOUD_LOGGING_ONLY
