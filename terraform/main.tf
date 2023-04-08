@@ -226,8 +226,8 @@ resource "google_cloud_run_service" "run_service" {
   template {
     spec {
       containers {
-        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-        # "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        # image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
         env {
           name = "GITHUB_TOKEN"
           value_from {
