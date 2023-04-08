@@ -70,22 +70,24 @@ resource "google_project_service" "artifact_registry_api" {
   disable_on_destroy = true
 }
 
+# API Gateway
+
 resource "google_api_gateway_api" "api_gw" {
+  project = var.project_id
   provider = google-beta
   api_id = "my-api"
-  project = var.project_id
 }
 
 resource "google_api_gateway_api_config" "api_cfg" {
+  project = var.project_id
   provider = google-beta
   api = google_api_gateway_api.api_gw.api_id
   api_config_id = "api-config"
-  project = var.project_id
 
   openapi_documents {
     document {
       path = "api_spec.yaml"
-      contents = filebase64("api_spec.yaml")
+      contents = base64encode("api_spec.yaml")
     }
   }
   lifecycle {
@@ -98,6 +100,8 @@ resource "google_api_gateway_gateway" "gw" {
   region = var.region
   project = var.project_id
   api_config = google_api_gateway_api_config.api_cfg.id
+  gateway_id = "api_gw"
+
   depends_on = [google_api_gateway_api_config.api_cfg]
 
 }
@@ -111,7 +115,7 @@ resource "google_sql_database_instance" "mysql-instance" {
     tier = "db-f1-micro"
   }
 
-  deletion_protection  = "true"
+  deletion_protection  = "false"
 }
 
 resource "google_sql_database" "database" {
@@ -131,37 +135,37 @@ resource "google_sql_user" "read-user" {
 }
 
 # Run containers for test-app (container image is overwritten in cloudbuild.yaml)
-resource "google_cloud_run_service" "run_service" {
-  name = local.test_app_cloud_run_name
-  location = var.region
+# resource "google_cloud_run_service" "run_service" {
+#   name = local.test_app_cloud_run_name
+#   location = var.region
 
-  template {
-    spec {
-      containers {
-        #image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.test_app_image_name}:latest"
-      }
-    }
-  }
-  # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service#metadata
-  # How to connect a container to a SQL database
+#   template {
+#     spec {
+#       containers {
+#         #image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+#         image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.test_app_image_name}:latest"
+#       }
+#     }
+#   }
+#   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_service#metadata
+#   # How to connect a container to a SQL database
 
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
+#   traffic {
+#     percent         = 100
+#     latest_revision = true
+#   }
 
-  depends_on = [google_project_service.cloud_run_api]  # Waits for the Cloud Run API to be enabled
-}
+#   depends_on = [google_project_service.cloud_run_api]  # Waits for the Cloud Run API to be enabled
+# }
 
-# Allow unauthenticated users to invoke the Cloud Run service
-resource "google_cloud_run_service_iam_member" "run_all_users" {
-  service  = google_cloud_run_service.run_service.name
-  location = google_cloud_run_service.run_service.location
-  role     = "roles/run.invoker"
-  member   = "allUsers"
-}
+# # Allow unauthenticated users to invoke the Cloud Run service
+# resource "google_cloud_run_service_iam_member" "run_all_users" {
+#   service  = google_cloud_run_service.run_service.name
+#   location = google_cloud_run_service.run_service.location
+#   role     = "roles/run.invoker"
+#   member   = "allUsers"
+# }
 
-output "service_url" {
-  value = google_cloud_run_service.run_service.status[0].url
-}
+# output "service_url" {
+#   value = google_cloud_run_service.run_service.status[0].url
+# }
