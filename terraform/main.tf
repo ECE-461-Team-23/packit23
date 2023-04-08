@@ -105,7 +105,7 @@ resource "google_project_service" "artifact_registry_api" {
   disable_on_destroy = true
 }
 
-# SQL change
+# SQL change change
 resource "google_sql_database_instance" "mysql-instance" {
   name             = local.google_sql_database_instance
   region           = "us-central1"
