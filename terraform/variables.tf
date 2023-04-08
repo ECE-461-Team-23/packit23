@@ -1,5 +1,5 @@
-variable "project_id" {
-  description = "GCP Project ID"
+variable "project_id"{
+  description = "learning-project-381819"
   type        = string
-  sensitive   = true
+  sensitive   = false
 }

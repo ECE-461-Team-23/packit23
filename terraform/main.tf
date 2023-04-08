@@ -1,12 +1,15 @@
 # Settings
 locals {
   # General
-  github_branch = "terraform-container-build"
+  github_branch = "terraform"
   artifact_registry_repo_name = "container-repo"
 
   # test-app
   test_app_cloud_run_name = "test-app"
   test_app_image_name = "python-app2"
+
+  # sql db
+  google_sql_database_instance = "mysql-instance"
 }
 
 terraform {
@@ -102,3 +105,30 @@ resource "google_project_service" "artifact_registry_api" {
   disable_on_destroy = true
 }
 
+# SQL 
+resource "google_sql_database_instance" "mysql-instance" {
+  name             = local.google_sql_database_instance
+  region           = "us-central1"
+  database_version = "MYSQL_8_0"
+  settings {
+    tier = "db-f1-micro"
+  }
+
+  deletion_protection  = "true"
+}
+
+resource "google_sql_database" "database" {
+  name = "mysql_db"
+  instance = local.google_sql_database_instance
+}
+
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+}
+
+resource "google_sql_user" "read-user" {
+  name     = "read-user"
+  instance = local.google_sql_database_instance
+  host     = "%"
+  password = "strongpassword"
+}
