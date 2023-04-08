@@ -1,11 +1,11 @@
 variable "project_id"{
-  description = "learning-project-381819"
+  description = "GCP Project ID"
   type        = string
   sensitive   = false
 }
 
-variable "region" {
-  description = "us-central1"
-  type = string
-  sensitive = false
+variable "github_token" {
+  description = "Github API Token"
+  type        = string
+  sensitive   = true
 }

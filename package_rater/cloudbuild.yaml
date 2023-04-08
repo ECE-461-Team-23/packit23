@@ -1,0 +1,27 @@
+substitutions:
+  _DIR_NAME: "package_rater/"
+  _ARTIFACT_REGISTRY_REPO_NAME: "container-repo"
+  _PACKAGE_RATER_APP_CLOUD_RUN_NAME: "package-rater-app"
+  _PACKAGE_RATER_APP_IMAGE_NAME: "package-rater-image"
+
+steps:
+  # Docker Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t',
+           'us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_PACKAGE_RATER_APP_IMAGE_NAME}',
+           '.']
+    dir: "${_DIR_NAME}"
+
+  # Docker Push
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push',
+           'us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_PACKAGE_RATER_APP_IMAGE_NAME}']
+    dir: "${_DIR_NAME}"
+
+  # Redeploy with new build (only updates the image)
+  - name: "gcr.io/cloud-builders/gcloud"
+    args: ['beta', 'run', 'deploy', '${_PACKAGE_RATER_APP_CLOUD_RUN_NAME}',
+            '--image', "us-central1-docker.pkg.dev/${PROJECT_ID}/${_ARTIFACT_REGISTRY_REPO_NAME}/${_PACKAGE_RATER_APP_IMAGE_NAME}:latest",
+            '--region', 'us-central1']
+            # '--allow-unauthenticated',
+            # '--platform', 'managed']
