@@ -1,13 +1,13 @@
 SQL STORED DELETION ENDPOINT PROCS
 /reset (DELETE)
-BEGIN CREATE PROCEDURE Reset_Registry
+BEGINCREATE PROCEDURE Reset_Registry
 AS
 	DELETE * FROM Registry
 GO
 END;
 
 /package/{id} (DELETE)
-BEGIN CREATE PROCEDURE Reset_Registry
+BEGINCREATE PROCEDURE Reset_Registry
 AS
 	DELETE FROM Registry
 	WHERE ID = @@ID
@@ -15,7 +15,7 @@ GO
 END;
 
 /package/byName/{name} (DELETE)
-BEGIN CREATE PROCEDURE Reset_Registry
+BEGINCREATE PROCEDURE Reset_Registry
 AS
 	DELETE FROM Registry
 	WHERE NAME = @@name
