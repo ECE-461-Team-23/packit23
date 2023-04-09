@@ -188,7 +188,7 @@ resource "google_api_gateway_api_config" "api_cfg" {
   openapi_documents {
     document {
       path = "api_spec.yaml"
-      contents = filebase64("test-fixtures/apigateway/api_spec.yaml")
+      contents = base64encode("api_spec.yaml")
     }
   }
   lifecycle {
@@ -235,7 +235,22 @@ resource "google_project_service" "secret_manager_api" {
   disable_on_destroy = true
 }
 
-resource "google_project_service" "api_gateway" {
+resource "google_project_service" "cloud_sql_api" {
+  service = "sql-component.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "api_gateway_api" {
   service = "apigateway.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "service_control_api" {
+  service = "servicecontrol.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "service_management_api" {
+  service = "servicemanagement.googleapis.com"
   disable_on_destroy = true
 }

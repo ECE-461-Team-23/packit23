@@ -19,7 +19,7 @@ PUBLIC_IP_ADDRESS = "35.192.126.179"
 DBNAME = "mysql_db"
 PROJECT_ID = "packit23-382802"
 INSTANCE_NAME = "mysql-instance"
- 
+
 # configuration
 app.config["SECRET_KEY"] = "yoursecretkey"
 app.config["SQLALCHEMY_DATABASE_URI"]= f"mysql + mysqldb://root:{PASSWORD}@{PUBLIC_IP_ADDRESS}/{DBNAME}?unix_socket =/cloudsql/{PROJECT_ID}:{INSTANCE_NAME}"
