@@ -1,37 +1,3 @@
-# # API Gateway
-
-# resource "google_api_gateway_api" "api_gw" {
-#   provider = google-beta
-#   api_id = "my-api"
-# }
-
-# resource "google_api_gateway_api_config" "api_cfg" {
-#   provider = google-beta
-#   api = google_api_gateway_api.api_gw.api_id
-#   api_config_id = "api-config"
-
-#   openapi_documents {
-#     document {
-#       path = "api_spec.yaml"
-#       contents = base64encode("api_spec.yaml")
-#     }
-#   }
-#   lifecycle {
-#     create_before_destroy = true
-#   }
-# }
-
-# resource "google_api_gateway_gateway" "gw" {
-#   provider = google-beta
-#   region = var.region
-#   api_config = google_api_gateway_api_config.api_cfg.id
-#   gateway_id = "api_gw"
-
-#   depends_on = [google_api_gateway_api_config.api_cfg]
-
-# }
-
-
 # Settings
 locals {
   # General
@@ -205,6 +171,41 @@ resource "google_sql_user" "read-user" {
   password = "strongpassword"
 }
 
+# API Gateway
+
+resource "google_api_gateway_api" "api_gw" {
+  project = var.project_id
+  provider = google-beta
+  api_id = "my-api"
+}
+
+resource "google_api_gateway_api_config" "api_cfg" {
+  project = var.project_id
+  provider = google-beta
+  api = google_api_gateway_api.api_gw.api_id
+  api_config_id = "api-config"
+
+  openapi_documents {
+    document {
+      path = "api_spec.yaml"
+      contents = filebase64("test-fixtures/apigateway/api_spec.yaml")
+    }
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "google_api_gateway_gateway" "gw" {
+  project = var.project_id
+  provider = google-beta
+  api_config = google_api_gateway_api_config.api_cfg.id
+  gateway_id = "api_gw"
+
+  depends_on = [google_api_gateway_api_config.api_cfg]
+
+}
+
 ## Service Accounts ##
 
 resource "google_service_account" "package_rater_service_account" {
@@ -231,5 +232,10 @@ resource "google_project_service" "artifact_registry_api" {
 
 resource "google_project_service" "secret_manager_api" {
   service = "secretmanager.googleapis.com"
+  disable_on_destroy = true
+}
+
+resource "google_project_service" "api_gateway" {
+  service = "apigateway.googleapis.com"
   disable_on_destroy = true
 }
