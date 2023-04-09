@@ -1,0 +1,59 @@
+SQL READ ALL
+/package/byRegEX (POST)
+BEGIN
+SELECT * FROM Registry AS A
+	WHERE 
+??????????????????/
+	INNER JOIN Binaries AS B
+		ON A.BINARY_PK = B.ID
+	INNER JOIN Users AS C
+		ON A.USER_PK = C.ID
+	INNER JOIN Ratings AS D
+		ON A.RATING_PK = D.ID
+END;
+
+/packages - POST
+BEGIN
+SELECT * FROM Registry AS A
+	INNER JOIN Binaries AS B
+		ON A.BINARY_PK = B.ID
+	INNER JOIN Users AS C
+		ON A.USER_PK = C.ID
+	INNER JOIN Ratings AS D
+		ON A.RATING_PK = D.ID
+END;
+
+
+/package/(id) - GET
+BEGIN
+SELECT * FROM Registry AS A
+	WHERE
+	A.ID = @@Id;
+	INNER JOIN Binaries AS B
+		ON A.BINARY_PK = B.ID
+	INNER JOIN Users AS C
+		ON A.USER_PK = C.ID
+	INNER JOIN Ratings AS D
+		ON A.RATING_PK = D.ID
+END;
+
+/package/(id)/rate - GET
+BEGIN
+SELECT * FROM Ratings AS A
+	WHERE  B.ID = @@id
+	INNER JOIN Registry AS B
+		WHERE A.ID = B.RATING_PK
+END;
+
+/package/byName/(name) - GET
+BEGIN
+SELECT * FROM Registry AS A
+	WHERE A.NAME == @@name
+	INNER JOIN Binaries AS B
+		ON A.BINARY_PK = B.ID
+	INNER JOIN Users AS C
+		ON A.USER_PK = C.ID
+	INNER JOIN Ratings AS D
+		ON A.RATING_PK = D.ID
+	ORDER BY A.VERSION DESC
+END;
