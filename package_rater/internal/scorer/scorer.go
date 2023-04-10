@@ -38,6 +38,7 @@ func CalculateVersionScore(repo *models.Repository) {
 
 	repo.VersionScore = score
 }
+
 func CalculateRampUpTime(repo *models.Repository) {
 	rampUpTime := 0.0
 	res, _ := regexp.MatchString(`(?i)docs\b`, repo.Readme)
