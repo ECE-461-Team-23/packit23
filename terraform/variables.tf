@@ -9,3 +9,15 @@ variable "github_token" {
   type        = string
   sensitive   = true
 }
+
+variable "read_user_password" {
+  description = "Read User Password"
+  type = string
+  sensitive = true
+}
+
+variable "write_user_password" {
+  description = "Write User Password"
+  type = string
+  sensitive = true
+}

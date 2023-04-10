@@ -9,8 +9,19 @@ locals {
   package_rater_app_cloud_run_name = "package-rater-app"
   package_rater_app_image_name = "package-rater-image"
 
+  # read-apis-app
+  read_db_user_name = "read-user"
+  read_apis_app_cloud_run_name = "read-apis-app"
+  read_apis_app_image_name = "read-apis-image"
+
+  # write-apis-app
+  write_db_user_name = "write-user"
+  write_apis_app_cloud_run_name = "write-apis-app"
+  write_apis_app_image_name = "write-apis-image"
+
   # SQL
-  google_sql_database_instance = "mysql-instance"
+  mysql_db_name = "mysql-db"
+  mysql_db_instance_name = "mysql-instance"
 }
 
 terraform {
@@ -54,15 +65,15 @@ resource "google_cloudbuild_trigger" "package_rater_app_trigger" {
 }
 
 # Run containers for package-rater-app (container image is overwritten in cloudbuild.yaml)
-resource "google_cloud_run_service" "run_service" {
+resource "google_cloud_run_service" "package_rater_run_service" {
   name = local.package_rater_app_cloud_run_name
-  location = "us-central1"
+  location = local.region
 
   template {
     spec {
       containers {
-        # image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-        image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
         env {
           name = "GITHUB_TOKEN"
           value_from {
@@ -105,6 +116,130 @@ resource "google_cloud_run_service" "run_service" {
                 google_secret_manager_secret_iam_member.package_rater_access] # Make sure service account is attached to policy to give access to secret token
 }
 
+# Run containers for read apis
+resource "google_cloud_run_service" "read_apis_run_service" {
+  name = local.package_rater_app_cloud_run_name
+  location = local.region
+
+  template {
+    spec {
+      containers {
+        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        env {
+          name = "PROJECT_ID"
+          value = var.project_id
+        }
+        env {
+          name = "REGION"
+          value = local.region
+        }
+        env {
+          name = "INSTANCE_CONNECTION_NAME"
+          value = local.mysql_db_instance_name
+        }
+        env {
+          name = "DB_NAME"
+          value = local.mysql_db_name
+        }
+        env {
+          name = "DB_USER"
+          value = local.read_db_user_name
+        }
+        env {
+          name = "DB_PASSWORD"
+          value_from {
+            secret_key_ref {
+              name = "READ_USER_PASSWORD"
+              key  = "latest"
+            }
+          }
+        }
+      }
+
+      timeout_seconds = 90
+      container_concurrency = 5
+      service_account_name = google_service_account.read_apis_service_account.email
+    }
+
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale" = "10"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  depends_on = [google_project_service.cloud_run_api,
+                google_secret_manager_secret_iam_member.read_apis_access]
+}
+
+# Run containers for write apis
+resource "google_cloud_run_service" "write_apis_run_service" {
+  name = local.read_apis_app_cloud_run_name
+  location = local.region
+
+  template {
+    spec {
+      containers {
+        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        env {
+          name = "PROJECT_ID"
+          value = var.project_id
+        }
+        env {
+          name = "REGION"
+          value = local.region
+        }
+        env {
+          name = "INSTANCE_CONNECTION_NAME"
+          value = local.mysql_db_instance_name
+        }
+        env {
+          name = "DB_NAME"
+          value = local.mysql_db_name
+        }
+        env {
+          name = "DB_USER"
+          value = local.write_db_user_name
+        }
+        env {
+          name = "DB_PASSWORD"
+          value_from {
+            secret_key_ref {
+              name = "WRITE_USER_PASSWORD"
+              key  = "latest"
+            }
+          }
+        }
+      }
+
+      timeout_seconds = 90
+      container_concurrency = 5
+      service_account_name = google_service_account.read_apis_service_account.email
+    }
+
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale" = "10"
+      }
+    }
+  }
+
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
+
+  depends_on = [google_project_service.cloud_run_api,
+                google_secret_manager_secret_iam_member.write_apis_access]
+}
+
 # Allow unauthenticated users to invoke the Cloud Run service
 resource "google_cloud_run_service_iam_member" "run_all_users" {
   service  = google_cloud_run_service.run_service.name
@@ -124,11 +259,41 @@ resource "google_secret_manager_secret" "github_token_manager" {
   depends_on = [ google_project_service.secret_manager_api ]
 }
 
+resource "google_secret_manager_secret" "read_user_password_manager" {
+  secret_id = "READ_USER_PASSWORD"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
+resource "google_secret_manager_secret" "write_user_password_manager" {
+  secret_id = "WRITE_USER_PASSWORD"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
 # Create a new version of "Github Token" secret
 resource "google_secret_manager_secret_version" "github_token_manager_version" {
   secret   = google_secret_manager_secret.github_token_manager.id
   # version  = 1
   secret_data = var.github_token
+}
+
+resource "google_secret_manager_secret_version" "read_user_password_secret" {
+  secret   = google_secret_manager_secret.read_user_password_manager.id
+  secret_data = var.read_user_password
+}
+
+resource "google_secret_manager_secret_version" "write_user_password_secret" {
+  secret   = google_secret_manager_secret.write_user_password_manager.id
+  secret_data = var.write_user_password
 }
 
 # Give Package Rater SA access to "Github Token" secret
@@ -138,13 +303,25 @@ resource "google_secret_manager_secret_iam_member" "package_rater_access" {
   member = "serviceAccount:${google_service_account.package_rater_service_account.email}"
 }
 
+resource "google_secret_manager_secret_iam_member" "read_apis_access" {
+  secret_id = google_secret_manager_secret.read_user_password_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "write_apis_access" {
+  secret_id = google_secret_manager_secret.write_user_password_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
 output "service_url" {
   value = google_cloud_run_service.run_service.status[0].url
 }
 
 # SQL Database
 resource "google_sql_database_instance" "mysql-instance" {
-  name             = local.google_sql_database_instance
+  name             = local.mysql_db_instance_name
   region           = local.region
   database_version = "MYSQL_8_0"
   settings {
@@ -155,8 +332,8 @@ resource "google_sql_database_instance" "mysql-instance" {
 }
 
 resource "google_sql_database" "database" {
-  name = "mysql_db"
-  instance = local.google_sql_database_instance
+  name = local.mysql_db_name
+  instance = local.mysql_db_instance_name
 }
 
 resource "random_id" "db_name_suffix" {
@@ -165,14 +342,20 @@ resource "random_id" "db_name_suffix" {
 
 # SQL users
 resource "google_sql_user" "read-user" {
-  name     = "read-user"
-  instance = local.google_sql_database_instance
+  name     = local.read_user_name
+  instance = local.mysql_db_instance_name
   host     = "%"
-  password = "strongpassword"
+  password = var.read_user_password
+}
+
+resource "google_sql_user" "write-user" {
+  name     = local.write_user_name
+  instance = local.mysql_db_instance_name
+  host     = "%"
+  password = var.write_user_password
 }
 
 # API Gateway
-
 resource "google_api_gateway_api" "api_gw" {
   project = var.project_id
   provider = google-beta
@@ -213,6 +396,16 @@ resource "google_service_account" "package_rater_service_account" {
   display_name = "Service account for package rater containers"
 }
 
+resource "google_service_account" "write_apis_service_account" {
+  account_id = "package-rater-sa"
+  display_name = "Service account for delete/write apis containers"
+}
+
+resource "google_service_account" "read_apis_service_account" {
+  account_id = "package-rater-sa"
+  display_name = "Service account for read apis containers"
+}
+
 ## Enable services ##
 
 resource "google_project_service" "cloud_run_api" {
@@ -237,7 +430,7 @@ resource "google_project_service" "secret_manager_api" {
 
 resource "google_project_service" "cloud_sql_api" {
   service = "sql-component.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "api_gateway_api" {
