@@ -15,4 +15,4 @@ COPY . /app/
 EXPOSE 8080
 
 # CMD ["/package_rater_app"]
-ENTRYPOINT [ "go", "run", "src/main.go" ]
+ENTRYPOINT [ "go", "run", "main.go" ]
