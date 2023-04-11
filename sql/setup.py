@@ -68,7 +68,7 @@ with pool.connect() as db_conn:
     # db_conn.execute(
     #     sqlalchemy.text(
     #         "CREATE TABLE IF NOT EXISTS Binaries (" \
-    #         "ID int, BINARY_FILE ????, PRIMARY KEY (ID),);" \
+    #         "ID int, BINARY_FILE ????, JS_PROGRAM varchar(4),PRIMARY KEY (ID),);" \
     #     )
     # )
     # # commit transaction (SQLAlchemy v2.X.X is commit as you go)

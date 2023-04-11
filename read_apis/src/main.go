@@ -1,4 +1,4 @@
-package main
+package src
 
 /*
 Provide GET functionality for the following endpoints:
@@ -10,54 +10,18 @@ Provide GET functionality for the following endpoints:
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
+
+	"github.com/packit461/packit23/package_rater/internal/logger"
 
 	"cloud.google.com/go/cloudsqlconn"
 	"cloud.google.com/go/cloudsqlconn/mysql/mysql"
 	_ "github.com/go-sql-driver/mysql"
 )
-
-type PackageMetaData struct {
-	ID      int
-	VERSION string
-	NAME    string
-}
-
-type Package struct {
-	ID          int
-	NAME        string // varchar (50),
-	RATING_PK   int
-	AUTHOR_PK   int
-	URL         string // varchar(255)
-	BINARY_PK   int
-	VERSION     string // varchar (15),
-	UPLOADED    int    // datetime?
-	IS_EXTERNAL bool
-}
-
-type Users struct {
-	ID               int
-	USERNAME         string // varchar(50)
-	PASSWORD         string // varchar(50)
-	TOKEN            string // varchar(50)
-	TOKEN_CREATED    int    // datetime
-	TOKEN_EXPIRY     int    // datetime
-	PRIVILEDGE_LEVEL int
-}
-
-type Ratings struct {
-	ID               int
-	BUS_FACTOR       float32
-	CORRECTNESS      float32
-	RAMP_UP          float32
-	RESPONSIVENESS   float32
-	LICENSE_SCORE    float32
-	PINNING_PRACTICE float32
-	PULL_REQUEST     float32
-	NET_SCORE        float32
-}
 
 func connect() {
 	cleanup, err := mysql.RegisterDriver("cloudsql-mysql", cloudsqlconn.WithCredentialsFile("key.json"))
@@ -81,14 +45,34 @@ func connect() {
 	}
 }
 
+func return_error_packet(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte("500 - Internal error"))
+}
+
 // Get the packages from the registry
-// Pagination handled by JS
 func handle_packages(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "user7:s$cret@tcp(127.0.0.1:3306)/testdb") // EMILE FIX PLS
 	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	logger.Info(fmt.Sprintf("Received %s request", r.Method))
+	headers := "Headers:\n"
+	for key, value := range r.Header {
+		headers += fmt.Sprintf("%s=%s\n", key, value)
+	}
+	logger.Info(headers)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		logger.Info("\nError reading body of request\n")
+		return_error_packet(w, r)
+		return
+	}
+	logger.Info(fmt.Sprintf("Body:\n%s\n", body))
+	// TODO: ADD PAGINATION STUFF
 	res, err := db.Query(`SELECT ID, NAME, VERSION FROM Registry;`)
 	defer res.Close()
 
@@ -98,7 +82,7 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 
 	// --------- DEBUGGING/EXPERIMENTAL CODE TO VIEW RETURN ---------
 	for res.Next() {
-		var pack PackageMetaData
+		var pack PackageMetadata // I have no idea what to put here
 		err := res.Scan(&pack.ID, &pack.VERSION, &pack.NAME)
 
 		if err != nil {
@@ -122,7 +106,53 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 
 // Return this package (ID)
 func handle_packages_id(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+	db, err := sql.Open("mysql", "user7:s$cret@tcp(127.0.0.1:3306)/testdb") // EMILE FIX PLS
+	defer db.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	logger.Info(fmt.Sprintf("Received %s request", r.Method))
+	headers := "Headers:\n"
+	for key, value := range r.Header {
+		headers += fmt.Sprintf("%s=%s\n", key, value)
+	}
+	logger.Info(headers)
+
+	id := r.Header.Get("Id")
+	if id == "" {
+		logger.Info("\nNo Matching Value to key Id\n")
+		return_error_packet(w, r)
+		return
+	}
+
+	res, err := db.Query(`SELECT ID, NAME, VERSION FROM Registry;`)
+	defer res.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var meta PackageMetadata
+	err = res.Scan(&meta.ID, &meta.Name, &meta.Version)
+	res, err = db.Query(`BEGIN SELECT 
+							B.BINARY_FILE, 
+							A.URL 
+							B.JS_PROGRAM
+							FROM Registry AS A
+							WHERE A.ID == id
+							INNER JOIN Binaries AS B
+								ON A.BINARY_PIK == B.ID
+							END;`)
+	defer res.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var packData PackageData
+	// Need to append NULL for JSProgram
+	err = res.Scan(&packData.Content, &packData.URL, &packData.JSProgram)
+	totalPack := PackageModel{Metadata: &meta, Data: &packData}
+	packJson, err := json.Marshal(totalPack)
+	w.Write(packJson)
+	w.WriteHeader(200)
 }
 
 // Return the rating. Only use this if each metric was computed successfully.

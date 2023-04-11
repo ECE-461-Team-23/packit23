@@ -37,11 +37,10 @@ type PackageHistoryEntry struct {
 
 // The \"Name\" and \"Version\" are used as a unique identifier pair when uploading a package.  The \"ID\" is used as an internal identifier for interacting with existing packages.
 type PackageMetadata struct {
+	ID   string `json:"ID"`
 	Name string `json:"Name"`
 	// Package version
 	Version string `json:"Version"`
-
-	ID string `json:"ID"`
 }
 
 type PackageQuery struct {
@@ -69,7 +68,7 @@ type PackageRating struct {
 	NetScore float64 `json:"NetScore"`
 }
 
-type ModelPackage struct {
+type PackageModel struct {
 	Metadata *PackageMetadata `json:"metadata"`
 
 	Data *PackageData `json:"data"`
