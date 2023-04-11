@@ -19,7 +19,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-type RegistryPackage struct {
+type PackageMetaData struct {
+	ID      int
+	VERSION string
+	NAME    string
+}
+
+type Package struct {
 	ID          int
 	NAME        string // varchar (50),
 	RATING_PK   int
@@ -76,26 +82,43 @@ func connect() {
 }
 
 // Get the packages from the registry
+// Pagination handled by JS
 func handle_packages(w http.ResponseWriter, r *http.Request) {
 	db, err := sql.Open("mysql", "user7:s$cret@tcp(127.0.0.1:3306)/testdb") // EMILE FIX PLS
 	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
-	res, err := db.Query(`BEGIN
-		SELECT * FROM Registry AS A 
-		INNER JOIN Binaries AS B 
-			ON A.BINARY_PK = B.ID 
-		INNER JOIN Users AS C 
-			ON A.USER_PK = C.ID 
-		INNER JOIN Ratings AS D 
-			ON A.RATING_PK = D.ID 
-		END;`)
+	res, err := db.Query(`SELECT ID, NAME, VERSION FROM Registry;`)
 	defer res.Close()
+
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// --------- DEBUGGING/EXPERIMENTAL CODE TO VIEW RETURN ---------
+	for res.Next() {
+		var pack PackageMetaData
+		err := res.Scan(&pack.ID, &pack.VERSION, &pack.NAME)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("%v\n", pack)
+	}
+	// --------------------------------------------------------------
 }
+
+// `BEGIN
+//	SELECT * FROM Registry AS A
+//	INNER JOIN Binaries AS B
+//		ON A.BINARY_PK = B.ID
+//	INNER JOIN Users AS C
+//		ON A.USER_PK = C.ID
+//	INNER JOIN Ratings AS D
+//		ON A.RATING_PK = D.ID
+//	END;`
 
 // Return this package (ID)
 func handle_packages_id(w http.ResponseWriter, r *http.Request) {
