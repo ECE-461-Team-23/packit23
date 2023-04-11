@@ -9,10 +9,29 @@ Provide GET functionality for the following endpoints:
 */
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
+
+	"cloud.google.com/go/cloudsqlconn"
+	"cloud.google.com/go/cloudsqlconn/mysql/mysql"
 )
+
+func connect() {
+	cleanup, err := mysql.RegisterDriver("cloudsql-mysql", cloudsqlconn.WithCredentialsFile("key.json"))
+	if err != nil {
+		// ... handle error
+	}
+	// call cleanup when you're done with the database connection
+	defer cleanup()
+
+	db, err := sql.Open(
+		"cloudsql-mysql",
+		"myuser:mypass@cloudsql-mysql(project:region:instance)/mydb",
+	)
+	// ... etc
+}
 
 // Get the packages from the registry
 func handle_packages(w http.ResponseWriter, r *http.Request) {
