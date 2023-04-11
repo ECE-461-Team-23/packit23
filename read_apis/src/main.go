@@ -21,14 +21,36 @@ import (
 
 type RegistryPackage struct {
 	ID          int
-	NAME        string
+	NAME        string // varchar (50),
 	RATING_PK   int
 	AUTHOR_PK   int
-	URL         string
+	URL         string // varchar(255)
 	BINARY_PK   int
-	VERSION     string
-	UPLOADED    int // datetime?
+	VERSION     string // varchar (15),
+	UPLOADED    int    // datetime?
 	IS_EXTERNAL bool
+}
+
+type Users struct {
+	ID               int
+	USERNAME         string // varchar(50)
+	PASSWORD         string // varchar(50)
+	TOKEN            string // varchar(50)
+	TOKEN_CREATED    int    // datetime
+	TOKEN_EXPIRY     int    // datetime
+	PRIVILEDGE_LEVEL int
+}
+
+type Ratings struct {
+	ID               int
+	BUS_FACTOR       float32
+	CORRECTNESS      float32
+	RAMP_UP          float32
+	RESPONSIVENESS   float32
+	LICENSE_SCORE    float32
+	PINNING_PRACTICE float32
+	PULL_REQUEST     float32
+	NET_SCORE        float32
 }
 
 func connect() {
@@ -47,6 +69,7 @@ func connect() {
 	if db != nil {
 		fmt.Print("Db not nil!")
 	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
