@@ -24,8 +24,10 @@ requestedID = 1 #EMILE: This needs to be changed in the future tbh
 session = Session(engine) 
 stmt = (
     select(Registry)
-    .where(Registry.id == requestedID)
+    .where(Registry.ID == requestedID)
     .join(Users)
+    .where(Users.ID == Registry.AUTHOR_PK)
+    .where(Ratings.ID == Registry.RATING_PK)
 )
 # /package/(id) - GET
 # This is probably not fine, you'd want som specific values
