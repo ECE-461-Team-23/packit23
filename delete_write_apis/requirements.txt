@@ -1,1 +1,5 @@
-flask
+fastapi==0.95.0
+uvicorn[standard]==0.21.1
+pydantic>=1.2.0,<2.0.0
+bcrypt==4.0.1
+PyJWT==2.6.0

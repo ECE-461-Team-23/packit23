@@ -6,6 +6,7 @@
 .DS_Store
 */cache.txt
 */log.txt
+*.pyc
 
 # Store private keys (GCP or Terraform credentials)
 credentials/ 
