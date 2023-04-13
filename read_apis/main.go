@@ -12,7 +12,7 @@ import (
 	"log"
 	"net/http"
 
-	r "github.com/packit461/packit23/read_apis"
+	r "github.com/packit461/packit23/read_apis/src"
 )
 
 func main() {

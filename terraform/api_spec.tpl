@@ -251,6 +251,8 @@ info:
 paths:
   "/authenticate":
     put:
+      x-google-backend:
+        address: ${read_url}
       description: Create an access token.
       operationId: CreateAuthToken
       consumes:
@@ -313,6 +315,8 @@ paths:
           description: Package is not uploaded due to the disqualified rating.
   "/package/byName/{name}":
     delete:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       operationId: PackageByNameDelete
       parameters:
         - description: |-
@@ -335,6 +339,8 @@ paths:
           description: Package does not exist.
       summary: Delete all versions of this package.
     get:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       description: Return the history of this package (all versions).
       operationId: PackageByNameGet
       parameters:
@@ -424,6 +430,8 @@ paths:
       summary: Get any packages fitting the regular expression.
   "/package/{id}":
     delete:
+      x-google-backend:
+        address: google_cloud_run_service.run_service.status[0].url
       operationId: PackageDelete
       parameters:
         - description: Package ID
@@ -442,6 +450,8 @@ paths:
           description: Package does not exist.
       summary: Delete this version of the package.
     get:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       description: Return this package.
       operationId: PackageRetrieve
       parameters:
@@ -483,6 +493,8 @@ paths:
         required: true
         type: string
     put:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       consumes:
         - application/json
       description: >-
@@ -521,6 +533,8 @@ paths:
       summary: Update this content of the package.
   "/package/{id}/rate":
     get:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       operationId: PackageRate
       parameters: []
       produces:
@@ -619,6 +633,8 @@ paths:
       summary: Get the packages from the registry.
   "/reset":
     delete:
+      x-google-backend:
+        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
       description: Reset the registry to a system default state.
       operationId: RegistryReset
       parameters: []

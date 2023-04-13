@@ -9,11 +9,13 @@ Provide GET functionality for the following endpoints:
 */
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/packit461/packit23/package_rater/internal/logger"
@@ -26,22 +28,23 @@ import (
 func connect() {
 	cleanup, err := mysql.RegisterDriver("cloudsql-mysql", cloudsqlconn.WithCredentialsFile("key.json"))
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("cloudsqlconn.NewDialer: %v", err)
 	}
-	// call cleanup when you're done with the database connection
-	defer cleanup()
-
-	db, err := sql.Open(
-		"cloudsql-mysql",
-		"myuser:mypass@cloudsql-mysql(project:region:instance)/mydb",
-	)
-
-	if db != nil {
-		fmt.Print("Db not nil!")
+	var opts []cloudsqlconn.DialOption
+	if usePrivate != "" {
+		opts = append(opts, cloudsqlconn.WithPrivateIP())
 	}
+	mysql.RegisterDialContext("cloudsqlconn",
+		func(ctx context.Context, addr string) (net.Conn, error) {
+			return d.Dial(ctx, instanceConnectionName, opts...)
+		})
 
+	dbURI := fmt.Sprintf("%s:%s@cloudsqlconn(localhost:3306)/%s?parseTime=true",
+		dbUser, dbPwd, dbName)
+
+	dbPool, err := sql.Open("mysql", dbURI)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("sql.Open: %v", err)
 	}
 }
 
