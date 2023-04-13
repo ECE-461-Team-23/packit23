@@ -316,7 +316,7 @@ paths:
   "/package/byName/{name}":
     delete:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${write_url}
       operationId: PackageByNameDelete
       parameters:
         - description: |-
@@ -340,7 +340,7 @@ paths:
       summary: Delete all versions of this package.
     get:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${read_url}
       description: Return the history of this package (all versions).
       operationId: PackageByNameGet
       parameters:
@@ -431,7 +431,7 @@ paths:
   "/package/{id}":
     delete:
       x-google-backend:
-        address: google_cloud_run_service.run_service.status[0].url
+        address: ${write_url}
       operationId: PackageDelete
       parameters:
         - description: Package ID
@@ -451,7 +451,7 @@ paths:
       summary: Delete this version of the package.
     get:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${read_url}
       description: Return this package.
       operationId: PackageRetrieve
       parameters:
@@ -494,7 +494,7 @@ paths:
         type: string
     put:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${read_url}
       consumes:
         - application/json
       description: >-
@@ -534,7 +534,7 @@ paths:
   "/package/{id}/rate":
     get:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${read_url}
       operationId: PackageRate
       parameters: []
       produces:
@@ -634,7 +634,7 @@ paths:
   "/reset":
     delete:
       x-google-backend:
-        address: https://users-svc-qqx6qmklha-ew.a.run.app/all
+        address: ${write_url}
       description: Reset the registry to a system default state.
       operationId: RegistryReset
       parameters: []
