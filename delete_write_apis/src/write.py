@@ -9,13 +9,14 @@ in use (other apis)
 """
 
 import json
+import requests
 import traceback
 
 
 from typing import List, Optional, Union
-from fastapi import APIRouter, Request, HTTPException, Header, Body
+from fastapi import APIRouter, Request, HTTPException
 
-from . import authentication
+from . import authentication, helper
 
 from .models import (
     AuthenticationRequest,
@@ -104,15 +105,42 @@ async def package_create(request: Request) -> Union[None, Package]:
 
     # Handle Request
     print(parsed_body)
-    if "Content" in parsed_body:
-        # Upload package
-        pass
+    url = None
+    if "Content" in parsed_body:       
+        # Package contents. This is the zip file uploaded by the user. (Encoded as text using a Base64 encoding).
+        # This will be a zipped version of an npm package's GitHub repository, minus the ".git/" directory." It will, for example, include the "package.json" file that can be used to retrieve the project homepage.
+        # See https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage.
+        try:
+            url = helper.grabUrl(parsed_body["Content"])
+        except Exception:
+            print(f"Unable to get url from Content: {traceback.print_exc()}")
+            raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
     elif "URL" in parsed_body:
         # Ingest package from public URL
-        pass
+        url = parsed_body["URL"]
 
+    try:
+        assert helper.checkGithubUrl(url)
+    except Exception:
+        print(f"Unable to validate url ({url}): {traceback.print_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
-    # Package results
+    # TODO: Send url to package_rater container, read response
+    #           Error if the package has a disqualified rating
+    headers = {}
+    timeout = "??"
+    try:
+        response = requests.post(url="API_ENDPOINT", headers=headers, data=url, timeout=timeout)
+        rating = response.json()
+    except Exception:
+        print(f"Unable to get data from package_rater: {traceback.print_exc()}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    
+    # TODO: Check if package exists, error if it already does
+    print(rating)
+    # TODO: Upload package
+
+    # Build response
     packageMetadata = PackageMetadata(
         Name=PackageName(__root__="ExampleName"),
         Version="ExampleVersion",

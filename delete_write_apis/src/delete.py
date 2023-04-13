@@ -5,7 +5,11 @@ APIs for DELETE methods:
 /package/byName/(name)
 """
 
-from fastapi import APIRouter
+import json
+
+from fastapi import APIRouter, Request, HTTPException
+
+from . import authentication, helper
 
 router = APIRouter()
 
@@ -13,14 +17,19 @@ router = APIRouter()
 def delete_root():
     return {"Hello": "Delete"}
 
-# @router.delete('/reset', response_model=None)
-# def registry_reset(
-#     x__authorization: AuthenticationToken = Header(..., alias='X-Authorization')
-# ) -> None:
-#     """
-#     Reset the registry
-#     """
-#     pass
+@router.delete('/reset', response_model=None)
+async def registry_reset(request: Request) -> None:
+    # Parse request
+    try:
+        token = request.headers["X-Authorization"]
+        userid = authentication.validate_jwt(token)
+        assert userid != None
+
+    except Exception:
+        print(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.print_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+
+    print(f"reset requested by {userid}")
 
 # @router.delete('/package/byName/{name}', response_model=None)
 # def package_by_name_delete(
