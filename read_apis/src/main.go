@@ -17,6 +17,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"github.com/packit461/packit23/package_rater/internal/logger"
 
@@ -25,8 +26,29 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func connect() {
-	cleanup, err := mysql.RegisterDriver("cloudsql-mysql", cloudsqlconn.WithCredentialsFile("key.json"))
+func connect() (*sql.DB, error) {
+	mustGetenv := func(k string) string {
+		v := os.Getenv(k)
+		if v == "" {
+			log.Fatalf("Fatal Error in connect_connector.go: %s environment variable not set.", k)
+		}
+		return v
+	}
+
+	var (
+		dbUser   = mustGetenv("DB_USER")
+		dbPwd    = mustGetenv("DB_PASSWORD")
+		dbName   = mustGetenv("DB_NAME")
+		project  = mustGetenv("PROJECT_ID")
+		region   = mustGetenv("REGION")
+		instance = mustGetenv("INSTANCE_NAME")
+
+		usePrivate = os.Getenv("PRIVATE_IP")
+	)
+
+	var instanceConnectionName = project + region + instance
+
+	d, err := cloudsqlconn.NewDialer(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("cloudsqlconn.NewDialer: %v", err)
 	}
@@ -46,6 +68,7 @@ func connect() {
 	if err != nil {
 		return nil, fmt.Errorf("sql.Open: %v", err)
 	}
+	return dbPool, nil
 }
 
 func return_error_packet(w http.ResponseWriter, r *http.Request) {
