@@ -54,6 +54,16 @@ resource "google_project_service" "cloud_run_api" {
   disable_on_destroy = true
 }
 
+resource "google_project_service" "iam_api" {
+  service = "iam.googleapis.com"
+  disable_on_destroy = true
+}
+    
+resource "google_project_service" "cloud_resource_manager_api" {
+  service = "cloudresourcemanager.googleapis.com"
+  disable_on_destroy = true
+}
+
 resource "google_project_service" "cloud_build_api" {
   service = "cloudbuild.googleapis.com"
   disable_on_destroy = true
@@ -141,67 +151,67 @@ resource "google_cloud_run_service" "package_rater_run_service" {
                 google_secret_manager_secret_iam_member.package_rater_access] # Make sure service account is attached to policy to give access to secret token
 }
 
-# # Run containers for read apis
-# resource "google_cloud_run_service" "read_apis_run_service" {
-#   name = local.package_rater_app_cloud_run_name
-#   location = local.region
+# Run containers for read apis
+resource "google_cloud_run_service" "read_apis_run_service" {
+  name = local.package_rater_app_cloud_run_name
+  location = local.region
 
-#   template {
-#     spec {
-#       containers {
-#         image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-#         # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
-#         env {
-#           name = "PROJECT_ID"
-#           value = var.project_id
-#         }
-#         env {
-#           name = "REGION"
-#           value = local.region
-#         }
-#         env {
-#           name = "INSTANCE_NAME"
-#           value = local.mysql_db_instance_name
-#         }
-#         env {
-#           name = "DB_NAME"
-#           value = local.mysql_db_name
-#         }
-#         env {
-#           name = "DB_USER"
-#           value = local.read_db_user_name
-#         }
-#         env {
-#           name = "DB_PASSWORD"
-#           value_from {
-#             secret_key_ref {
-#               name = "READ_USER_PASSWORD"
-#               key  = "latest"
-#             }
-#           }
-#         }
-#       }
+  template {
+    spec {
+      containers {
+        image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        env {
+          name = "PROJECT_ID"
+          value = var.project_id
+        }
+        env {
+          name = "REGION"
+          value = local.region
+        }
+        env {
+          name = "INSTANCE_NAME"
+          value = local.mysql_db_instance_name
+        }
+        env {
+          name = "DB_NAME"
+          value = local.mysql_db_name
+        }
+        env {
+          name = "DB_USER"
+          value = local.read_db_user_name
+        }
+        env {
+          name = "DB_PASSWORD"
+          value_from {
+            secret_key_ref {
+              name = "READ_USER_PASSWORD"
+              key  = "latest"
+            }
+          }
+        }
+      }
 
-#       timeout_seconds = 90
-#       container_concurrency = 5
-#       service_account_name = google_service_account.read_apis_service_account.email
-#     }
+      timeout_seconds = 90
+      container_concurrency = 5
+      service_account_name = google_service_account.read_apis_service_account.email
+    }
 
-#     metadata {
-#       annotations = {
-#         "autoscaling.knative.dev/maxScale" = "10"
-#       }
-#     }
-#   }
+    metadata {
+      annotations = {
+        "autoscaling.knative.dev/maxScale" = "10"
+      }
+    }
+  }
 
-#   traffic {
-#     percent         = 100
-#     latest_revision = true
-#   }
+  traffic {
+    percent         = 100
+    latest_revision = true
+  }
 
-#   depends_on = [google_project_service.cloud_run_api,
-#                 google_secret_manager_secret_iam_member.read_apis_access]
-# }
+  depends_on = [google_project_service.cloud_run_api,
+                google_secret_manager_secret_iam_member.read_apis_access]
+}
 
 # Run containers for write apis
 resource "google_cloud_run_service" "write_apis_run_service" {
@@ -282,21 +292,21 @@ resource "google_cloudbuild_trigger" "package_rater_app_trigger" {
   depends_on = [google_project_service.cloud_build_api]
 }
 
-# resource "google_cloudbuild_trigger" "read_apis_app_trigger" {
-#   location = "us-central1"
+resource "google_cloudbuild_trigger" "read_apis_app_trigger" {
+  location = "us-central1"
 
-#   github {
-#     owner = "packit461"
-#     name = "packit23"
+  github {
+    owner = "packit461"
+    name = "packit23"
 
-#     push {
-#       branch = local.github_branch
-#     }
-#   }
+    push {
+      branch = local.github_branch
+    }
+  }
 
-#   filename = "read_apis/cloudbuild.yaml"
-#   depends_on = [google_project_service.cloud_build_api]
-# }
+  filename = "read_apis/cloudbuild.yaml"
+  depends_on = [google_project_service.cloud_build_api]
+}
 
 resource "google_cloudbuild_trigger" "write_apis_app_trigger" {
   location = "us-central1"
@@ -322,12 +332,12 @@ resource "google_cloud_run_service_iam_member" "package_rater_users" {
   member   = "allUsers"
 }
 
-# resource "google_cloud_run_service_iam_member" "read_apis_users" {
-#   service  = google_cloud_run_service.read_apis_run_service.name
-#   location = google_cloud_run_service.read_apis_run_service.location
-#   role     = "roles/run.invoker"
-#   member   = "allUsers"
-# }
+resource "google_cloud_run_service_iam_member" "read_apis_users" {
+  service  = google_cloud_run_service.read_apis_run_service.name
+  location = google_cloud_run_service.read_apis_run_service.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
 
 resource "google_cloud_run_service_iam_member" "write_apis_users" {
   service  = google_cloud_run_service.write_apis_run_service.name
@@ -409,51 +419,51 @@ output "package_rater_service_url" {
   description = "url for package rater service"
 }
 
-# output "read_apis_service_url" {
-#   value = google_cloud_run_service.read_apis_run_service.status[0].url
-#   description = "url for read apis service"
-# }
+output "read_apis_service_url" {
+  value = google_cloud_run_service.read_apis_run_service.status[0].url
+  description = "url for read apis service"
+}
 
 output "write_apis_service_url" {
   value = google_cloud_run_service.write_apis_run_service.status[0].url
   description = "url for write apis service"
 }
 
-# SQL Database
-# resource "google_sql_database_instance" "mysql-instance" {
-#   name             = local.mysql_db_instance_name
-#   region           = local.region
-#   database_version = "MYSQL_8_0"
-#   settings {
-#     tier = "db-f1-micro"
-#   }
+SQL Database
+resource "google_sql_database_instance" "mysql-instance" {
+  name             = local.mysql_db_instance_name
+  region           = local.region
+  database_version = "MYSQL_8_0"
+  settings {
+    tier = "db-f1-micro"
+  }
 
-#   deletion_protection  = "true"
-# }
+  deletion_protection  = "true"
+}
 
-# resource "google_sql_database" "database" {
-#   name = local.mysql_db_name
-#   instance = local.mysql_db_instance_name
-# }
+resource "google_sql_database" "database" {
+  name = local.mysql_db_name
+  instance = local.mysql_db_instance_name
+}
 
-# resource "random_id" "db_name_suffix" {
-#   byte_length = 4
-# }
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+}
 
 # SQL users
-# resource "google_sql_user" "read-user" {
-#   name     = local.read_db_user_name
-#   instance = local.mysql_db_instance_name
-#   host     = "%"
-#   password = var.read_user_password
-# }
+resource "google_sql_user" "read-user" {
+  name     = local.read_db_user_name
+  instance = local.mysql_db_instance_name
+  host     = "%"
+  password = var.read_user_password
+}
 
-# resource "google_sql_user" "write-user" {
-#   name     = local.write_db_user_name
-#   instance = local.mysql_db_instance_name
-#   host     = "%"
-#   password = var.write_user_password
-# }
+resource "google_sql_user" "write-user" {
+  name     = local.write_db_user_name
+  instance = local.mysql_db_instance_name
+  host     = "%"
+  password = var.write_user_password
+}
 
 # API Gateway
 resource "google_api_gateway_api" "api_gw" {
@@ -470,7 +480,7 @@ resource "google_api_gateway_api_config" "api_cfg" {
 
   openapi_documents {
     document {
-      path = "api_spec.tpl"
+      path = "api_spec.yaml"
       #contents = base64encode(templatefile("${path.module}/api_spec.tpl", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
       contents = base64encode(templatefile("${path.module}/api_spec.tpl", { read_url=google_cloud_run_service.write_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
     
@@ -481,11 +491,12 @@ resource "google_api_gateway_api_config" "api_cfg" {
   }
 }
 
-resource "google_api_gateway_gateway" "gw" {
+resource "google_api_gateway_gateway" "gateway" {
   project = var.project_id
+  region = local.region
   provider = google-beta
   api_config = google_api_gateway_api_config.api_cfg.id
-  gateway_id = "api_gw"
+  gateway_id = "api-gw"
 
   depends_on = [google_api_gateway_api_config.api_cfg]
 
