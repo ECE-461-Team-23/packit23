@@ -432,26 +432,26 @@ output "write_apis_service_url" {
 }
 
 # SQL Database
-resource "google_sql_database_instance" "mysql-instance" {
-  name             = local.mysql_db_instance_name
-  region           = local.region
-  database_version = "MYSQL_8_0"
-  settings {
-    tier = "db-f1-micro"
-    disk_size = 10 # GB
-  }
+# resource "google_sql_database_instance" "mysql-instance" {
+#   name             = local.mysql_db_instance_name
+#   region           = local.region
+#   database_version = "MYSQL_8_0"
+#   settings {
+#     tier = "db-f1-micro"
+#     disk_size = 10 # GB
+#   }
 
-  deletion_protection  = "true"
-}
+#   deletion_protection  = "true"
+# }
 
-resource "google_sql_database" "database" {
-  name = local.mysql_db_name
-  instance = local.mysql_db_instance_name
-}
+# resource "google_sql_database" "database" {
+#   name = local.mysql_db_name
+#   instance = local.mysql_db_instance_name
+# }
 
-resource "random_id" "db_name_suffix" {
-  byte_length = 4
-}
+# resource "random_id" "db_name_suffix" {
+#   byte_length = 4
+# }
 
 # SQL users
 resource "google_sql_user" "read-user" {
