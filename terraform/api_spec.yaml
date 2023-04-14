@@ -252,7 +252,7 @@ paths:
   "/authenticate":
     put:
       x-google-backend:
-        address: ${read_url}
+        address: ${write_url}
       description: Create an access token.
       operationId: CreateAuthToken
       consumes:
@@ -289,6 +289,8 @@ paths:
         required: true
         type: string
     post:
+      x-google-backend:
+        address: ${write_url}
       consumes:
         - application/json
       operationId: PackageCreate
@@ -400,6 +402,8 @@ paths:
         required: true
         type: string
     post:
+      x-google-backend:
+        address: ${read_url}
       consumes:
         - application/json
       description: >-
@@ -494,7 +498,7 @@ paths:
         type: string
     put:
       x-google-backend:
-        address: ${read_url}
+        address: ${write_url}
       consumes:
         - application/json
       description: >-
@@ -578,6 +582,8 @@ paths:
         required: true
         type: string
     post:
+      x-google-backend:
+        address: ${read_url}
       consumes:
         - application/json
       description: >-

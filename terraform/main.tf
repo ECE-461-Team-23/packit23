@@ -81,7 +81,7 @@ resource "google_project_service" "secret_manager_api" {
 
 resource "google_project_service" "cloud_sql_api" {
   service = "sql-component.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "api_gateway_api" {
@@ -91,12 +91,12 @@ resource "google_project_service" "api_gateway_api" {
 
 resource "google_project_service" "service_control_api" {
   service = "servicecontrol.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "service_management_api" {
   service = "servicemanagement.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 # Run containers for package-rater-app (container image is overwritten in cloudbuild.yaml)
@@ -153,14 +153,14 @@ resource "google_cloud_run_service" "package_rater_run_service" {
 
 # Run containers for read apis
 resource "google_cloud_run_service" "read_apis_run_service" {
-  name = local.package_rater_app_cloud_run_name
+  name = local.read_apis_app_cloud_run_name
   location = local.region
 
   template {
     spec {
       containers {
         image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.read_apis_app_image_name}:latest"
         env {
           name = "PROJECT_ID"
           value = var.project_id
@@ -192,14 +192,14 @@ resource "google_cloud_run_service" "read_apis_run_service" {
         }
       }
 
-      timeout_seconds = 90
-      container_concurrency = 5
+      timeout_seconds = 300
+      container_concurrency = 1
       service_account_name = google_service_account.read_apis_service_account.email
     }
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/maxScale" = "10"
+        "autoscaling.knative.dev/maxScale" = "20"
       }
     }
   }
@@ -222,7 +222,7 @@ resource "google_cloud_run_service" "write_apis_run_service" {
     spec {
       containers {
         image = "us-docker.pkg.dev/cloudrun/container/placeholder:latest" # Placeholder
-        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.package_rater_app_image_name}:latest"
+        # image = "us-central1-docker.pkg.dev/${var.project_id}/${local.artifact_registry_repo_name}/${local.write_apis_app_image_name}:latest"
         env {
           name = "PROJECT_ID"
           value = var.project_id
@@ -254,14 +254,14 @@ resource "google_cloud_run_service" "write_apis_run_service" {
         }
       }
 
-      timeout_seconds = 90
-      container_concurrency = 5
+      timeout_seconds = 300
+      container_concurrency = 1
       service_account_name = google_service_account.write_apis_service_account.email
     }
 
     metadata {
       annotations = {
-        "autoscaling.knative.dev/maxScale" = "10"
+        "autoscaling.knative.dev/maxScale" = "20"
       }
     }
   }
@@ -278,6 +278,7 @@ resource "google_cloud_run_service" "write_apis_run_service" {
 # Automatically build containers
 resource "google_cloudbuild_trigger" "package_rater_app_trigger" {
   location = "us-central1"
+  name     = "package-rater-app-trigger"
 
   github {
     owner = "packit461"
@@ -294,6 +295,7 @@ resource "google_cloudbuild_trigger" "package_rater_app_trigger" {
 
 resource "google_cloudbuild_trigger" "read_apis_app_trigger" {
   location = "us-central1"
+  name     = "read-apis-app-trigger"
 
   github {
     owner = "packit461"
@@ -310,6 +312,7 @@ resource "google_cloudbuild_trigger" "read_apis_app_trigger" {
 
 resource "google_cloudbuild_trigger" "write_apis_app_trigger" {
   location = "us-central1"
+  name     = "write-apis-app-trigger"
 
   github {
     owner = "packit461"
@@ -381,7 +384,6 @@ resource "google_secret_manager_secret" "write_user_password_manager" {
 # Create a new version of "Github Token" secret
 resource "google_secret_manager_secret_version" "github_token_manager_version" {
   secret   = google_secret_manager_secret.github_token_manager.id
-  # version  = 1
   secret_data = var.github_token
 }
 
@@ -395,7 +397,7 @@ resource "google_secret_manager_secret_version" "write_user_password_secret" {
   secret_data = var.write_user_password
 }
 
-# Give Package Rater SA access to "Github Token" secret
+# Give service accounts access to "Github Token" secret
 resource "google_secret_manager_secret_iam_member" "package_rater_access" {
   secret_id = google_secret_manager_secret.github_token_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
@@ -429,13 +431,14 @@ output "write_apis_service_url" {
   description = "url for write apis service"
 }
 
-SQL Database
+# SQL Database
 resource "google_sql_database_instance" "mysql-instance" {
   name             = local.mysql_db_instance_name
   region           = local.region
   database_version = "MYSQL_8_0"
   settings {
     tier = "db-f1-micro"
+    disk_size = 10 # GB
   }
 
   deletion_protection  = "true"
@@ -470,6 +473,8 @@ resource "google_api_gateway_api" "api_gw" {
   project = var.project_id
   provider = google-beta
   api_id = "my-api"
+
+  depends_on = [ google_project_service.api_gateway_api ]
 }
 
 resource "google_api_gateway_api_config" "api_cfg" {
@@ -482,7 +487,7 @@ resource "google_api_gateway_api_config" "api_cfg" {
     document {
       path = "api_spec.yaml"
       #contents = base64encode(templatefile("${path.module}/api_spec.tpl", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
-      contents = base64encode(templatefile("${path.module}/api_spec.tpl", { read_url=google_cloud_run_service.write_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
+      contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.write_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
     
     }
   }
