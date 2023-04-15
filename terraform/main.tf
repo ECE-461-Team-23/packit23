@@ -486,7 +486,7 @@ resource "google_api_gateway_api_config" "api_cfg" {
   openapi_documents {
     document {
       path = "api_spec.yaml"
-      contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.write_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
+      contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
     }
   }
   lifecycle {
