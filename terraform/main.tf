@@ -51,52 +51,52 @@ resource "google_artifact_registry_repository" "container_repo" {
 
 resource "google_project_service" "cloud_run_api" {
   service = "run.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "iam_api" {
   service = "iam.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
     
 resource "google_project_service" "cloud_resource_manager_api" {
   service = "cloudresourcemanager.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "cloud_build_api" {
   service = "cloudbuild.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "artifact_registry_api" {
   service = "artifactregistry.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "secret_manager_api" {
   service = "secretmanager.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "cloud_sql_api" {
   service = "sql-component.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy = false # Need to stay false
 }
 
 resource "google_project_service" "api_gateway_api" {
   service = "apigateway.googleapis.com"
-  disable_on_destroy = true
+  disable_on_destroy = false
 }
 
 resource "google_project_service" "service_control_api" {
   service = "servicecontrol.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy = false # Need to stay false
 }
 
 resource "google_project_service" "service_management_api" {
   service = "servicemanagement.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy = false # Need to stay false
 }
 
 # Run containers for package-rater-app (container image is overwritten in cloudbuild.yaml)
