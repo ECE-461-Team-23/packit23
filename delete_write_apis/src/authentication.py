@@ -25,7 +25,7 @@ def generate_jwt(userid: str):
 
     # Get secret
     try:
-        key = os.environ["jwt_token_secret"]
+        key = os.environ["jwt_secret"]
     except Exception:
         print(f"Unable to find environment variable: {traceback.print_exc()}")
         return
@@ -38,7 +38,7 @@ def validate_jwt(token: str) -> str:
     
     # Get secret
     try:
-        key = os.environ["jwt_token_secret"]
+        key = os.environ["jwt_secret"]
     except Exception:
         print(f"Unable to find environment variable: {traceback.print_exc()}")
         return
