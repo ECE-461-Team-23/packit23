@@ -16,7 +16,7 @@ import traceback
 from typing import List, Optional, Union
 from fastapi import APIRouter, Request, HTTPException
 
-from . import authentication, helper
+from . import authentication, helper, database
 
 from .models import (
     AuthenticationRequest,
@@ -37,6 +37,7 @@ router = APIRouter()
 
 @router.get("/write")
 def write_root():
+    database.read_rows()
     return {"Hello": "Write"}
 
 test_db = {
@@ -139,6 +140,7 @@ async def package_create(request: Request) -> Union[None, Package]:
     # TODO: Check if package exists, error if it already does
     print(rating)
     # TODO: Upload package
+    # database.read_rows()
 
     # Build response
     packageMetadata = PackageMetadata(

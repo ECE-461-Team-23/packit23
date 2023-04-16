@@ -1,7 +1,7 @@
 # Settings
 locals {
   # General
-  github_branch = "terraform"
+  github_branch = "auth"
   artifact_registry_repo_name = "container-repo"
   region = "us-central1"
 
@@ -10,12 +10,12 @@ locals {
   package_rater_app_image_name = "package-rater-image"
 
   # read-apis-app
-  read_db_user_name = "read-user"
+  # read_db_user_name = "read-user"
   read_apis_app_cloud_run_name = "read-apis-app"
   read_apis_app_image_name = "read-apis-image"
 
   # write-apis-app
-  write_db_user_name = "write-user"
+  # write_db_user_name = "write-user"
   write_apis_app_cloud_run_name = "write-apis-app"
   write_apis_app_image_name = "write-apis-image"
 
@@ -28,7 +28,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.51.0"
+      version = "4.61.0"
     }
   }
 }
@@ -97,6 +97,11 @@ resource "google_project_service" "service_control_api" {
 resource "google_project_service" "service_management_api" {
   service = "servicemanagement.googleapis.com"
   disable_on_destroy = false # Need to stay false
+}
+
+resource "google_project_service" "sql_admin_api" {
+  service = "sqladmin.googleapis.com"
+  disable_on_destroy = false
 }
 
 # Run containers for package-rater-app (container image is overwritten in cloudbuild.yaml)
@@ -170,26 +175,26 @@ resource "google_cloud_run_service" "read_apis_run_service" {
           value = local.region
         }
         env {
-          name = "INSTANCE_NAME"
-          value = local.mysql_db_instance_name
+          name = "INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.mysql_instance.connection_name
         }
         env {
           name = "DB_NAME"
           value = local.mysql_db_name
         }
-        env {
-          name = "DB_USER"
-          value = local.read_db_user_name
-        }
-        env {
-          name = "DB_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = "READ_USER_PASSWORD"
-              key  = "latest"
-            }
-          }
-        }
+        # env {
+        #   name = "DB_USER"
+        #   value = local.read_db_user_name
+        # }
+        # env {
+        #   name = "DB_PASSWORD"
+        #   value_from {
+        #     secret_key_ref {
+        #       name = "READ_USER_PASSWORD"
+        #       key  = "latest"
+        #     }
+        #   }
+        # }
       }
 
       timeout_seconds = 300
@@ -199,6 +204,8 @@ resource "google_cloud_run_service" "read_apis_run_service" {
 
     metadata {
       annotations = {
+        "run.googleapis.com/client-name" = "terraform-read"
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.mysql_instance.connection_name
         "autoscaling.knative.dev/maxScale" = "20"
       }
     }
@@ -232,26 +239,26 @@ resource "google_cloud_run_service" "write_apis_run_service" {
           value = local.region
         }
         env {
-          name = "INSTANCE_NAME"
-          value = local.mysql_db_instance_name
+          name = "INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.mysql_instance.connection_name
         }
         env {
           name = "DB_NAME"
           value = local.mysql_db_name
         }
-        env {
-          name = "DB_USER"
-          value = local.write_db_user_name
-        }
-        env {
-          name = "DB_PASSWORD"
-          value_from {
-            secret_key_ref {
-              name = "WRITE_USER_PASSWORD"
-              key  = "latest"
-            }
-          }
-        }
+        # env {
+        #   name = "DB_USER"
+        #   value = local.write_db_user_name
+        # }
+        # env {
+        #   name = "DB_PASSWORD"
+        #   value_from {
+        #     secret_key_ref {
+        #       name = "WRITE_USER_PASSWORD"
+        #       key  = "latest"
+        #     }
+        #   }
+        # }
       }
 
       timeout_seconds = 300
@@ -261,6 +268,8 @@ resource "google_cloud_run_service" "write_apis_run_service" {
 
     metadata {
       annotations = {
+        "run.googleapis.com/client-name" = "terraform-write-delete"
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.mysql_instance.connection_name
         "autoscaling.knative.dev/maxScale" = "20"
       }
     }
@@ -416,6 +425,19 @@ resource "google_secret_manager_secret_iam_member" "write_apis_access" {
   member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
 }
 
+# Give service accounts database access
+resource "google_project_iam_member" "write_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.editor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+resource "google_project_iam_member" "read_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.client"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
 output "package_rater_service_url" {
   value = google_cloud_run_service.package_rater_run_service.status[0].url
   description = "url for package rater service"
@@ -432,13 +454,18 @@ output "write_apis_service_url" {
 }
 
 # SQL Database
-resource "google_sql_database_instance" "mysql-instance" {
+resource "google_sql_database_instance" "mysql_instance" {
   name             = local.mysql_db_instance_name
   region           = local.region
   database_version = "MYSQL_8_0"
   settings {
     tier = "db-f1-micro"
     disk_size = 10 # GB
+
+    database_flags {
+      name  = "cloudsql_iam_authentication" #"cloudsql.iam_authentication"
+      value = "on"
+    }
   }
 
   deletion_protection  = "true"
@@ -455,17 +482,19 @@ resource "random_id" "db_name_suffix" {
 
 # SQL users
 resource "google_sql_user" "read-user" {
-  name     = local.read_db_user_name
-  instance = local.mysql_db_instance_name
-  host     = "%"
-  password = var.read_user_password
+  name     = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+  instance = google_sql_database_instance.mysql_instance.name
+  type = "CLOUD_IAM_SERVICE_ACCOUNT"
+  # host     = "%"
+  # password = var.read_user_password
 }
 
 resource "google_sql_user" "write-user" {
-  name     = local.write_db_user_name
-  instance = local.mysql_db_instance_name
-  host     = "%"
-  password = var.write_user_password
+  name     = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+  instance = google_sql_database_instance.mysql_instance.name
+  type = "CLOUD_IAM_SERVICE_ACCOUNT"
+  # host     = "%"
+  # password = var.write_user_password
 }
 
 # API Gateway

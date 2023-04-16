@@ -3,3 +3,6 @@ uvicorn[standard]==0.21.1
 pydantic>=1.2.0,<2.0.0
 bcrypt==4.0.1
 PyJWT==2.6.0
+PyMySQL==1.0.3
+SQLAlchemy==2.0.9
+cloud-sql-python-connector==1.2.2
