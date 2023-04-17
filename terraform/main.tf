@@ -466,6 +466,11 @@ resource "google_sql_database_instance" "mysql_instance" {
       name  = "cloudsql_iam_authentication" #"cloudsql.iam_authentication"
       value = "on"
     }
+
+    # database_flags {
+    #   name  = "cloudsql.iam_authentication"
+    #   value = "on"
+    # }
   }
 
   deletion_protection  = "true"
