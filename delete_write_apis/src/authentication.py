@@ -24,11 +24,7 @@ def generate_jwt(userid: str):
     }
 
     # Get secret
-    try:
-        key = os.environ["jwt_secret"]
-    except Exception:
-        print(f"Unable to find environment variable: {traceback.print_exc()}")
-        return
+    key = os.environ["jwt_secret"]
 
     return jwt.encode(payload, key, algorithm="HS256")
 
