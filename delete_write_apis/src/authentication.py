@@ -5,7 +5,7 @@ import jwt
 import os
 import traceback
 
-JWT_LIFESPAN = datetime.timedelta(minutes=60)
+JWT_LIFESPAN = datetime.timedelta(minutes=2880)
 
 
 ### JWT ###

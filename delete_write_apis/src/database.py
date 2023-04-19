@@ -109,25 +109,6 @@ def create_default():
     else:
         print("Tables already detected, not creating")
 
-def read_rows():
-    ### FOR TESTING, CAN DELETE ###
-    # engine = connect_with_connector()
-
-    with engine.begin() as conn:
-        s = users.select().where(users.c.username=="sampleruser")
-        result = conn.execute(s)
-        row = result.fetchone()
-        print(row)
-        if row:
-            return {"id": row[0], "username": row[1], "password": row[2]}
-        else:
-            return None
-    # connection = engine.connect()
-    # print(f"made connection! {connection}")
-
-    # inspector = inspect(engine)
-    # print(inspector.get_table_names())
-
 def get_data_for_user(username: str) -> str:
     # Return (userid, username, password) for a user
     with engine.begin() as conn:
