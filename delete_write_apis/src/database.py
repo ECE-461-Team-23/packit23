@@ -97,7 +97,7 @@ def create_default():
         metadata.create_all(engine) # Create tables
 
         print("Creating users")
-        logins_str = os.environ("USER_LOGINS")
+        logins_str = os.environ["USER_LOGINS"]
         logins_json = json.loads(logins_str)
         logins_list = [{"username": u, "password": bytes(p, 'utf-8')} for u, p in logins_json.items()]
 
