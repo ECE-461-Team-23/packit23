@@ -22,6 +22,9 @@ locals {
   # SQL
   mysql_db_name = "appdata"
   mysql_db_instance_name = "mysql-instance"
+
+  # Bucket
+  bucket_db_name = "binaries"
 }
 
 terraform {
@@ -179,6 +182,10 @@ resource "google_cloud_run_service" "read_apis_run_service" {
           value = google_cloud_run_service.package_rater_run_service.status[0].url
         }
         env {
+          name = "BUCKET_NAME"
+          value = google_storage_bucket.binary_bucket.name
+        }
+        env {
           name = "INSTANCE_CONNECTION_NAME"
           value = google_sql_database_instance.mysql_instance.connection_name
         }
@@ -231,7 +238,8 @@ resource "google_cloud_run_service" "read_apis_run_service" {
 
   depends_on = [google_project_service.cloud_run_api,
                 google_secret_manager_secret_iam_member.read_apis_access,
-                google_cloud_run_service.package_rater_run_service]
+                google_cloud_run_service.package_rater_run_service,
+                google_storage_bucket_iam_member.read_apis_bucket_access]
 }
 
 # Run containers for write apis
@@ -264,6 +272,10 @@ resource "google_cloud_run_service" "write_apis_run_service" {
         env {
           name = "PACKAGE_RATER_URL"
           value = google_cloud_run_service.package_rater_run_service.status[0].url
+        }
+        env {
+          name = "BUCKET_NAME"
+          value = google_storage_bucket.binary_bucket.name
         }
         env {
           name = "INSTANCE_CONNECTION_NAME"
@@ -328,7 +340,8 @@ resource "google_cloud_run_service" "write_apis_run_service" {
   depends_on = [google_project_service.cloud_run_api,
                 google_secret_manager_secret_iam_member.write_apis_access,
                 google_cloud_run_service.package_rater_run_service,
-                google_secret_manager_secret_iam_member.write_apis_token_access]
+                google_secret_manager_secret_iam_member.write_apis_token_access,
+                google_storage_bucket_iam_member.write_apis_bucket_access]
 }
 
 # Automatically build containers
@@ -554,6 +567,20 @@ resource "google_project_iam_member" "read_apis_db_user" {
  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
 }  
 
+# Bucket Access
+resource "google_storage_bucket_iam_member" "write_apis_bucket_access" {  
+ bucket = google_storage_bucket.binary_bucket.name
+ role   = "roles/storage.objectAdmin"  
+ member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+resource "google_storage_bucket_iam_member" "read_apis_bucket_access" {  
+ bucket = google_storage_bucket.binary_bucket.name
+ role   = "roles/storage.objectViewer"  
+ member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+# Outputs
 output "package_rater_service_url" {
   value = google_cloud_run_service.package_rater_run_service.status[0].url
   description = "url for package rater service"
@@ -567,6 +594,33 @@ output "read_apis_service_url" {
 output "write_apis_service_url" {
   value = google_cloud_run_service.write_apis_run_service.status[0].url
   description = "url for write apis service"
+}
+
+# Bucket
+resource "google_storage_bucket" "binary_bucket" {
+  name          = "binaries-${random_id.bucket_name_suffix.hex}"
+  location      = "US"
+  force_destroy = true
+
+  uniform_bucket_level_access = true
+  public_access_prevention = "enforced"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      numNewerVersions = 3
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
+
+resource "random_id" "bucket_name_suffix" {
+  byte_length = 8
 }
 
 # SQL Database
@@ -595,10 +649,6 @@ resource "google_sql_database_instance" "mysql_instance" {
 resource "google_sql_database" "database" {
   name = local.mysql_db_name
   instance = google_sql_database_instance.mysql_instance.name
-}
-
-resource "random_id" "db_name_suffix" {
-  byte_length = 4
 }
 
 # SQL users

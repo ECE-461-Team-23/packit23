@@ -6,3 +6,4 @@ PyJWT==2.6.0
 PyMySQL==1.0.3
 SQLAlchemy==2.0.9
 cloud-sql-python-connector==1.2.2
+google-cloud-storage==2.8.0

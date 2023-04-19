@@ -11,6 +11,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table, Column, Integer, String, MetaData, LargeBinary, DateTime, Float, Boolean
 
+from . import bucket
+
 # Table representations
 metadata = MetaData()
 packages = Table(
@@ -167,9 +169,11 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         rating_pk = result.inserted_primary_key[0]
         print(f"Rating inserted at id: {rating_pk}")
 
-    # TODO: upload to cloud bucket
+    # Upload to cloud bucket
+    # TODO: what if it is a URL? do we ingest?
     print("Uploading binary to cloud bucket..")
-    binary_pk = 0
+    binary_pk = rating_pk # binary_pk is same as rating_pk
+    bucket.upload_b64_blob(content, str(binary_pk)) 
 
     # Upload to packages table
     print("Uploading to packages..")
