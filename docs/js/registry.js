@@ -1,8 +1,13 @@
+// should be called by body in respective page as an onload
+function setupPage() {
+    renderTable();
+}
+
 // Populate RegistryTable
 // This should use /packages endpoint
 function renderTable() {
     $.ajax({
-        'url': "/packages",
+        'url': "/packages", // the go server URL I think? or /registry.html im not sure
         'method': "POST",
         'contentType': 'application/json'
     }).done( function(data) {
