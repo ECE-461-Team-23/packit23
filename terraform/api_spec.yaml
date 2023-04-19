@@ -254,6 +254,7 @@ paths:
     put:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       description: Create an access token.
       operationId: CreateAuthToken
       consumes:
@@ -292,6 +293,7 @@ paths:
     post:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       consumes:
         - application/json
       operationId: PackageCreate
@@ -320,6 +322,7 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: PackageByNameDelete
       parameters:
         - description: |-
@@ -344,6 +347,7 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       description: Return the history of this package (all versions).
       operationId: PackageByNameGet
       parameters:
@@ -405,6 +409,7 @@ paths:
     post:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       consumes:
         - application/json
       description: >-
@@ -437,6 +442,7 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: PackageDelete
       parameters:
         - description: Package ID
@@ -457,6 +463,7 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       description: Return this package.
       operationId: PackageRetrieve
       parameters:
@@ -500,6 +507,7 @@ paths:
     put:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       consumes:
         - application/json
       description: >-
@@ -540,6 +548,7 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       operationId: PackageRate
       parameters: []
       produces:
@@ -585,6 +594,7 @@ paths:
     post:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       consumes:
         - application/json
       description: >-
@@ -642,6 +652,7 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
       description: Reset the registry to a system default state.
       operationId: RegistryReset
       parameters: []
