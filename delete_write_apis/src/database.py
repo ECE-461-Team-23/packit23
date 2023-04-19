@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from google.cloud.sql.connector import Connector, IPTypes
@@ -7,7 +8,7 @@ import sqlalchemy
 from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import Table, Column, Integer, String, MetaData, LargeBinary, DateTime, Float
+from sqlalchemy import Table, Column, Integer, String, MetaData, LargeBinary, DateTime, Float, Boolean
 
 # Table representations
 metadata = MetaData()
@@ -19,9 +20,9 @@ packages = Table(
     Column('author_pk', Integer, nullable=False),
     Column('url', String(512), nullable=False),
     Column('binary_pk', Integer, nullable=False),
-    Column('version', Integer, nullable=False),
-    Column('upload_time', Integer, nullable=False),
-    Column('is_external', DateTime, nullable=False),
+    Column('version', String(512), nullable=False),
+    Column('upload_time', DateTime, nullable=False),
+    Column('is_external', Boolean, nullable=False),
 )
 
 users = Table(
@@ -96,7 +97,7 @@ def create_default():
         result = conn.execute(ins)
 
 def read_rows():
-    # create_default()
+    ### FOR TESTING, CAN DELETE ###
     # engine = connect_with_connector()
 
     with engine.begin() as conn:
@@ -114,15 +115,18 @@ def read_rows():
     # inspector = inspect(engine)
     # print(inspector.get_table_names())
 
-def get_password_for_user(username: str) -> str:
+def get_data_for_user(username: str) -> str:
+    # Return (userid, username, password) for a user
     with engine.begin() as conn:
         s = users.select().where(users.c.username==username)
         result = conn.execute(s)
+        if result.rowcount > 1:
+            raise Exception(f"Error: {result.rowcount} users found for {username}")
         row = result.fetchone()
         print(f"get_password_for_user({username}): found {row}")
 
         if row:
-            return row[2] #password
+            return row
         else:
             return None
 
@@ -130,5 +134,47 @@ def check_if_package_exists(packageName: str, packageVersion: str):
     # maybe some others?
     pass
 
-def upload_package():
-    pass
+def upload_package(name: str, version: str, author_pk: str, rating, url: str, content):
+    # Upload to ratings table
+    print("Uploading to rating table..")
+    with engine.begin() as conn:
+        ins = ratings.insert().values(
+            busFactor=rating["BUS_FACTOR_SCORE"],
+            correctness=rating["CORRECTNESS_SCORE"],
+            rampUp=rating["RAMP_UP_SCORE"],
+            responsiveMaintainer=rating["RESPONSIVENESS_MAINTAINER_SCORE"],
+            licenseScore=rating["LICENSE_SCORE"],
+            goodPinningPractice=0, #rating["GOOD_PINNING_PRACTICE_SCORE"], #TODO:
+            pullRequest=0, #rating["PULL_REQUEST"], TODO:
+            # VERSION_SCORE?
+            netScore=rating["NET_SCORE"]
+        )
+        result = conn.execute(ins)
+        rating_pk = result.inserted_primary_key[0]
+        print(f"Rating inserted at id: {rating_pk}")
+
+    # TODO: upload to cloud bucket
+    print("Uploading binary to cloud bucket..")
+    binary_pk = 0
+
+    # Upload to packages table
+    print("Uploading to packages..")
+    with engine.begin() as conn:
+        currentTime = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        ins = packages.insert().values(
+            name=name,
+            rating_pk=rating_pk,
+            author_pk=author_pk,
+            url=url,
+            binary_pk=binary_pk,
+            version=version,
+            upload_time=currentTime,
+            is_external=(content == None),
+        )
+
+        result = conn.execute(ins)
+        package_pk = result.inserted_primary_key[0]
+        print(f"Package inserted at id: {package_pk}")
+        return package_pk
+

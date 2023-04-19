@@ -36,9 +36,12 @@ from .models import (
 
 router = APIRouter()
 
+MINIMUM_ACCEPTABLE_NET_SCORE = 0.1
+
 @router.get("/write")
 def write_root():
-    database.read_rows()
+    database.create_default()
+    # database.read_rows()
     return {"Hello": "Write"}
 
 @router.put('/authenticate', response_model=AuthenticationToken)
@@ -60,17 +63,18 @@ async def create_auth_token(request: Request) -> AuthenticationToken:
         raise HTTPException(status_code=400, detail="Unable to get/parse request body")
 
     # See if username and password are valid
-    # try:
-    #     stored_password = database.get_password_for_user(username)
-    #     assert stored_password != None
-    #     assert authentication.check_password(password, stored_password)
-    # except Exception:
-    #     print(f"The user or password is invalid: {traceback.print_exc()}")
-    #     raise HTTPException(status_code=401, detail="The user or password is invalid")
+    try:
+        userid, _, stored_password = database.get_data_for_user(username)
+        assert stored_password != None
+        assert authentication.check_password(password, stored_password)
+    except Exception:
+        print(f"The user or password is invalid: {traceback.print_exc()}")
+        raise HTTPException(status_code=401, detail="The user or password is invalid")
 
     # Generate and return token
     try:
-        token = authentication.generate_jwt(username)
+        assert userid != None
+        token = authentication.generate_jwt(userid)
         assert token != None
         return AuthenticationToken(__root__=token)
     except Exception:
@@ -102,13 +106,14 @@ async def package_create(request: Request) -> Union[None, Package]:
         raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
     # Validate URL from request body
-    print(parsed_body)
+    print(f"HTTP Request body: {parsed_body}")
     try:
         packageName, packageVersion, packageUrl = helper.grabPackageDataFromRequest(parsed_body)
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
-        # assert helper.checkGithubUrl(packageUrl) # TODO: undo
+        packageUrl = "https://github.com/axios/axios" #TODO: undo
+        assert helper.checkGithubUrl(packageUrl)
         # if database.check_if_package_exists(packageName, packageVersion):   # TODO: UNDO
         #     print(f"Package already exists: {packageName}, {packageVersion}")
         #     raise HTTPException(status_code=409, detail="Package exists already.")   
@@ -120,13 +125,14 @@ async def package_create(request: Request) -> Union[None, Package]:
     # Error if the package has a disqualified rating
     # Check if the package already exists
     try:
-        headers = {}
-        timeout = 90 # seconds
-        response = requests.post(url=os.environ["PACKAGE_RATER_URL"], headers=headers, data=packageUrl, timeout=timeout)
-        print(response.text)
-        rating = response.json()
-        netscore = rating["NetScore"]       
-        if netscore < 0.1:
+        print("Sending request to Package Rater")
+        response = requests.post(url=os.environ["PACKAGE_RATER_URL"], data=packageUrl, timeout=90)
+        responseBody = response.text
+        print(f"Response body from Package Rater: {responseBody}")
+        assert responseBody != None and responseBody != ""
+        rating = json.loads(responseBody)
+        netscore = rating["NET_SCORE"]
+        if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
             print(f"Package has a disqualifying rating: {rating}")
             raise HTTPException(status_code=424, detail="Package is not uploaded due to the disqualified rating.")           
     except Exception:
@@ -134,20 +140,31 @@ async def package_create(request: Request) -> Union[None, Package]:
         raise HTTPException(status_code=500, detail="Internal server error")
     
     # TODO: Upload package
+    print("Uploading package...")
     try:
-        database.upload_package()
+        # ingest external packages?
+        packageId = database.upload_package(name=packageName, 
+                                            version=packageVersion, 
+                                            author_pk=userid,
+                                            rating=rating,
+                                            url=packageUrl,
+                                            content=parsed_body.get("Content"))           
     except Exception:
         print(f"Unable to upload package: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
+    print("Upload complete")
 
     # Build response
     packageMetadata = PackageMetadata(
-        Name=PackageName(__root__="ExampleName"),
-        Version="ExampleVersion",
-        ID=PackageID(__root__="ExampleName"),
+        Name=PackageName(__root__=packageName),
+        Version=packageVersion,
+        ID=PackageID(__root__=packageId),
     )
-    packageData = PackageData(Content="Example Content")
-    # packageData = PackageData(URL="Example URL") # TODO: is this an option?
+
+    if "Content" in parsed_body: 
+        packageData = PackageData(Content=parsed_body["Content"])
+    elif "URL" in parsed_body:
+        packageData = PackageData(URL=parsed_body["URL"])
 
     return Package(metadata=packageMetadata, data=packageData)
 

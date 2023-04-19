@@ -49,7 +49,9 @@ def grabPackageDataFromURL(url: str) -> tuple[str, str, str]:
     timeout = 60
     owner, repo = getOwnerAndRepoFromURL(url)
     response = requests.get(url=f"https://api.github.com/repos/{owner}/{repo}/contents/package.json", headers=headers, timeout=timeout)
-    package_data = response.json()
+    response_text = response.text
+    assert response_text != None and response_text != ""
+    package_data = json.loads(response_text)
     return package_data["name"], package_data["version"], package_data["homepage"]
 
 

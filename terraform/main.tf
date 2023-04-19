@@ -20,7 +20,7 @@ locals {
   write_apis_app_image_name = "write-apis-image"
 
   # SQL
-  mysql_db_name = "mysql-db"
+  mysql_db_name = "appdata"
   mysql_db_instance_name = "mysql-instance"
 }
 
@@ -191,10 +191,19 @@ resource "google_cloud_run_service" "read_apis_run_service" {
           value = local.read_db_user_name
         }
         env {
-          name = "DB_PASSWORD"
+          name = "DB_PASS"
           value_from {
             secret_key_ref {
               name = "READ_USER_PASSWORD"
+              key  = "latest"
+            }
+          }
+        }
+        env {
+          name = "JWT_SECRET"
+          value_from {
+            secret_key_ref {
+              name = "JWT_SECRET"
               key  = "latest"
             }
           }
@@ -269,10 +278,19 @@ resource "google_cloud_run_service" "write_apis_run_service" {
           value = local.write_db_user_name
         }
         env {
-          name = "DB_PASSWORD"
+          name = "DB_PASS"
           value_from {
             secret_key_ref {
               name = "WRITE_USER_PASSWORD"
+              key  = "latest"
+            }
+          }
+        }
+        env {
+          name = "JWT_SECRET"
+          value_from {
+            secret_key_ref {
+              name = "JWT_SECRET"
               key  = "latest"
             }
           }
@@ -410,6 +428,16 @@ resource "google_secret_manager_secret" "write_user_password_manager" {
   depends_on = [ google_project_service.secret_manager_api ]
 }
 
+resource "google_secret_manager_secret" "jwt_secret_manager" {
+  secret_id = "JWT_SECRET"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
 # Create a new version of "Github Token" secret
 resource "google_secret_manager_secret_version" "github_token_manager_version" {
   secret   = google_secret_manager_secret.github_token_manager.id
@@ -426,6 +454,11 @@ resource "google_secret_manager_secret_version" "write_user_password_secret" {
   secret_data = var.write_user_password
 }
 
+resource "google_secret_manager_secret_version" "jwt_secret" {
+  secret   = google_secret_manager_secret.jwt_secret_manager.id
+  secret_data = var.jwt_secret
+}
+
 # Give service accounts access to "Github Token" secret
 resource "google_secret_manager_secret_iam_member" "package_rater_token_access" {
   secret_id = google_secret_manager_secret.github_token_manager.secret_id
@@ -436,9 +469,10 @@ resource "google_secret_manager_secret_iam_member" "package_rater_token_access" 
 resource "google_secret_manager_secret_iam_member" "write_apis_token_access" {
   secret_id = google_secret_manager_secret.github_token_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
-  member = "serviceAccount:${google_service_account.package_rater_service_account.email}"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
 }
 
+# Give access to passwords for DB
 resource "google_secret_manager_secret_iam_member" "read_apis_access" {
   secret_id = google_secret_manager_secret.read_user_password_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
@@ -451,30 +485,43 @@ resource "google_secret_manager_secret_iam_member" "write_apis_access" {
   member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
 }
 
-# # Give service accounts database access
-# resource "google_project_iam_member" "write_apis_db_access" {
-#   project = var.project_id
-#   role = "roles/cloudsql.editor"
-#   member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
-# }
+# Give access to JWT secret
+resource "google_secret_manager_secret_iam_member" "read_apis_jwt_access" {
+  secret_id = google_secret_manager_secret.jwt_secret_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
 
-# resource "google_project_iam_member" "read_apis_db_access" {
-#   project = var.project_id
-#   role = "roles/cloudsql.client"
-#   member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
-# }
+resource "google_secret_manager_secret_iam_member" "write_apis_jwt_access" {
+  secret_id = google_secret_manager_secret.jwt_secret_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
 
-# resource "google_project_iam_member" "write_apis_db_user" {  
-#  project = var.project_id
-#  role   = "roles/cloudsql.instanceUser"  
-#  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
-# }  
+# Give service accounts database access
+resource "google_project_iam_member" "write_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.editor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
 
-# resource "google_project_iam_member" "read_apis_db_user" {  
-#  project = var.project_id
-#  role   = "roles/cloudsql.instanceUser"  
-#  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
-# }  
+resource "google_project_iam_member" "read_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.client"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+resource "google_project_iam_member" "write_apis_db_user" {  
+ project = var.project_id
+ role   = "roles/cloudsql.instanceUser"  
+ member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}  
+
+resource "google_project_iam_member" "read_apis_db_user" {  
+ project = var.project_id
+ role   = "roles/cloudsql.instanceUser"  
+ member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}  
 
 output "package_rater_service_url" {
   value = google_cloud_run_service.package_rater_run_service.status[0].url
@@ -516,7 +563,7 @@ resource "google_sql_database_instance" "mysql_instance" {
 
 resource "google_sql_database" "database" {
   name = local.mysql_db_name
-  instance = local.mysql_db_instance_name
+  instance = google_sql_database_instance.mysql_instance.name
 }
 
 resource "random_id" "db_name_suffix" {
