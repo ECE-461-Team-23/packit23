@@ -41,7 +41,7 @@ PACKAGE_RATER_RETRY_MAX = 2
 
 @router.get("/write")
 def write_root():
-    database.create_default()
+    # database.create_default()
     # database.read_rows()
     return {"Hello": "Write"}
 
