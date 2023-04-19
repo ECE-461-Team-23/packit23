@@ -37,6 +37,7 @@ from .models import (
 router = APIRouter()
 
 MINIMUM_ACCEPTABLE_NET_SCORE = 0.1
+PACKAGE_RATER_RETRY_MAX = 2
 
 @router.get("/write")
 def write_root():
@@ -126,10 +127,16 @@ async def package_create(request: Request) -> Union[None, Package]:
     # Error if the package has a disqualified rating
     # Check if the package already exists
     try:
-        print("Sending request to Package Rater")
-        response = requests.post(url=os.environ["PACKAGE_RATER_URL"], data=packageUrl, timeout=90)
-        responseBody = response.text
-        print(f"Response body from Package Rater: {responseBody}")
+        retry = 0
+        while retry < PACKAGE_RATER_RETRY_MAX:
+            print("Sending request to Package Rater")
+            response = requests.post(url=os.environ["PACKAGE_RATER_URL"], data=packageUrl, timeout=90)
+            responseBody = response.text
+            print(f"Response body from Package Rater: {responseBody}")
+            if response.status_code == 500:
+                retry += 1
+            else:
+                break
         assert responseBody != None and responseBody != ""
         rating = json.loads(responseBody)
         netscore = rating["NET_SCORE"]
