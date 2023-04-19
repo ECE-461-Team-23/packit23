@@ -131,8 +131,11 @@ def get_data_for_user(username: str) -> str:
             return None
 
 def check_if_package_exists(packageName: str, packageVersion: str):
-    # maybe some others?
-    pass
+    # Check if a given package name & version already exists
+    with engine.begin() as conn:
+        s = packages.select().where(packages.c.name==packageName, packages.c.version==packageVersion)
+        result = conn.execute(s)
+        return result.rowcount > 0
 
 def upload_package(name: str, version: str, author_pk: str, rating, url: str, content):
     # Upload to ratings table
