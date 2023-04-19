@@ -630,7 +630,7 @@ resource "google_sql_database_instance" "mysql_instance" {
   database_version = "MYSQL_8_0"
   settings {
     tier = "db-f1-micro"
-    disk_size = 10 # GB
+    disk_size = 25 # GB
 
     database_flags {
       name  = "cloudsql_iam_authentication" #"cloudsql.iam_authentication"
