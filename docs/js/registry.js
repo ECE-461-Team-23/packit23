@@ -38,6 +38,8 @@ function renderTable() {
 
 function openEntry(id) {
     // get by package by ID and open 
+    var url = '/packages/' + id; // Replace with the URL for your package details page
+    window.open(url, '_blank');
 }
 
 function searchRegistry() {
