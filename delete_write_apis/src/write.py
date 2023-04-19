@@ -114,12 +114,13 @@ async def package_create(request: Request) -> Union[None, Package]:
         assert packageUrl != None and packageUrl != ""
         packageUrl = "https://github.com/axios/axios" #TODO: undo
         assert helper.checkGithubUrl(packageUrl)
-        if database.check_if_package_exists(packageName, packageVersion):
-            print(f"Package already exists: {packageName}, {packageVersion}")
-            raise HTTPException(status_code=409, detail="Package exists already.")   
     except Exception:
         print(f"Unable to get/validate package data from request body: {traceback.print_exc()}")
         raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+    
+    if database.check_if_package_exists(packageName, packageVersion):
+        print(f"Package already exists: {packageName}, {packageVersion}")
+        raise HTTPException(status_code=409, detail="Package exists already.")   
 
     # TODO: Send url to package_rater container, read response
     # Error if the package has a disqualified rating
