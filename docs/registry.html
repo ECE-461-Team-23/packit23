@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
 <script src=”https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js”></script>
 <script type=”text/javascript” src=”https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js”></script>
-
+<script src="js/registry.js" type="text/javascript" defer></script>
 <script src="components/header.js" type="text/javascript" defer></script>
 <script src="components/footer.js" type="text/javascript" defer></script>
 <header-component></header-component>
@@ -24,20 +24,22 @@
                 <div id="filterPane" class="">
                     &nbsp;
                     <h3>Filters</h3>
-                    <form class="">
+                    <form class=""> 
+                        By RegEx:
+                        <br>
                         <div class="d-flex mb-3">
                             <input class="form-control" type="search" placeholder="Search" aria-label="Search">
                             &nbsp; <button id="filterSearch" class="btn btn-outline-primary" type="submit">Go</button>
                         </div>
                         <div class="mb-3">
-                            <label for="filterAuthor" class="form-label">Author</label>
-                            <input type="email" class="form-control" id="filterAuthor" placeholder="Name">
+                            <label for="filterID" class="form-label">By ID:</label>
+                            <input type="email" class="form-control" id="filterID" placeholder="ID">
                         </div>
                         <div class="mb-3">
-                        <label for="filterTextArea" class="form-label">Tags</label>
-                        <textarea class="form-control" id="filterTextArea" rows="1"></textarea>
+                        <label for="filterName" class="form-label">By Name:</label>
+                        <input type="email" class="form-control" id="filterName" placeholder="ID">
                         </div>
-                        <div class="mb-3">
+                        <!-- <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" value="" id="checkInternal">
                                 <label class="form-check-label" for="checkInternal">
@@ -50,7 +52,7 @@
                                     External
                                 </label>
                             </div>
-                        </div>
+                        </div> -->
                         <button id="filterSubmit" class="btn btn-primary" type="submit">Submit</button>
                     </form>
                 </div>
@@ -64,7 +66,7 @@
                     <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane"
                         type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">All</button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="internal-tab" data-bs-toggle="tab" data-bs-target="#internal-tab-pane"
                         type="button" role="tab" aria-controls="internal-tab-pane"
                         aria-selected="false">Internal</button>
@@ -73,7 +75,7 @@
                     <button class="nav-link" id="external-tab" data-bs-toggle="tab" data-bs-target="#external-tab-pane"
                         type="button" role="tab" aria-controls="external-tab-pane"
                         aria-selected="false">External</button>
-                </li>
+                </li> -->
                 <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link" id="disabled-tab" data-bs-toggle="tab" data-bs-target="#disabled-tab-pane"
                         type="button" role="tab" aria-controls="disabled-tab-pane" aria-selected="false"
@@ -89,9 +91,9 @@
                                 <th scope="col">#</th>
                                 <th scope="col">Name</th>
                                 <th scope="col">Version #</th>
-                                <th scope="col">In/Ext</th>
-                                <th scope="col">Author</th>
-                                <th scope="col">Actions</th>
+                                <!-- <th scope="col">In/Ext</th> -->
+                                <!-- <th scope="col">Author</th> -->
+                                <!-- <th scope="col">Actions</th> -->
                             </tr>
                         </thead>
                         <tbody class="table-group-divider">
