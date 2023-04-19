@@ -295,6 +295,15 @@ resource "google_cloud_run_service" "write_apis_run_service" {
             }
           }
         }
+        env {
+          name = "USER_LOGINS"
+          value_from {
+            secret_key_ref {
+              name = "USER_LOGINS"
+              key  = "latest"
+            }
+          }
+        }
       }
 
       timeout_seconds = 300
@@ -438,6 +447,16 @@ resource "google_secret_manager_secret" "jwt_secret_manager" {
   depends_on = [ google_project_service.secret_manager_api ]
 }
 
+resource "google_secret_manager_secret" "user_logins_manager" {
+  secret_id = "USER_LOGINS"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
 # Create a new version of "Github Token" secret
 resource "google_secret_manager_secret_version" "github_token_manager_version" {
   secret   = google_secret_manager_secret.github_token_manager.id
@@ -457,6 +476,11 @@ resource "google_secret_manager_secret_version" "write_user_password_secret" {
 resource "google_secret_manager_secret_version" "jwt_secret" {
   secret   = google_secret_manager_secret.jwt_secret_manager.id
   secret_data = var.jwt_secret
+}
+
+resource "google_secret_manager_secret_version" "user_logins_secret" {
+  secret   = google_secret_manager_secret.user_logins_manager.id
+  secret_data = jsonencode(var.user_logins)
 }
 
 # Give service accounts access to "Github Token" secret
@@ -494,6 +518,13 @@ resource "google_secret_manager_secret_iam_member" "read_apis_jwt_access" {
 
 resource "google_secret_manager_secret_iam_member" "write_apis_jwt_access" {
   secret_id = google_secret_manager_secret.jwt_secret_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+# Give access to user logins
+resource "google_secret_manager_secret_iam_member" "write_apis_user_logins_access" {
+  secret_id = google_secret_manager_secret.user_logins_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
   member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
 }

@@ -27,3 +27,9 @@ variable "write_user_password" {
   type = string
   sensitive = true
 }
+
+variable "user_logins" {
+  description = "JSON object holding logins to fill in user table"
+  type = map(string)
+  sensitive = true
+}

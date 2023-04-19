@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 
 from google.cloud.sql.connector import Connector, IPTypes
@@ -86,15 +87,25 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
 
 
 ## External functions
-engine = connect_with_connector()
+def check_if_default_exists():
+    inspector = inspect(engine)
+    return "users" in inspector.get_table_names()
 
 def create_default():
-    # engine = connect_with_connector()
-    metadata.create_all(engine) # Create tables
+    if not check_if_default_exists():
+        print("Creating tables")
+        metadata.create_all(engine) # Create tables
 
-    with engine.begin() as conn:
-        ins = users.insert().values(username="sampleuser", password=b'$2b$12$iUwbqGXqpky94Xul/l0RMe.nIe0HGFha9eQ0M9.82MIeSNvxoXNje')
-        result = conn.execute(ins)
+        print("Creating users")
+        logins_str = os.environ("USER_LOGINS")
+        logins_json = json.loads(logins_str)
+        logins_list = [{"username": u, "password": bytes(p, 'utf-8')} for u, p in logins_json.items()]
+
+        with engine.begin() as conn:
+            result = conn.execute(users.insert(), logins_list)
+        print("Finished creating tables & users")
+    else:
+        print("Tables already detected, not creating")
 
 def read_rows():
     ### FOR TESTING, CAN DELETE ###
@@ -181,3 +192,6 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         print(f"Package inserted at id: {package_pk}")
         return package_pk
 
+# Functions on startup
+engine = connect_with_connector()
+create_default()
