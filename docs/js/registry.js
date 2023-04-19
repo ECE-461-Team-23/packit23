@@ -36,14 +36,6 @@ function renderTable() {
     // });
 }
 
-function deleteEntry() {
-
-}
-
-function editEntry() {
-
-}
-
 function openEntry(id) {
     // get by package by ID and open 
 }
