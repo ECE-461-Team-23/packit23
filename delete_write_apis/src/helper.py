@@ -5,7 +5,33 @@ import os
 import requests
 import tempfile
 import zipfile
+from git import Repo
 from urllib.parse import urlparse
+
+def zipitem(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file),
+                       os.path.relpath(os.path.join(root, file),
+                                       os.path.join(path, '.')))
+
+def zipit(source_dir, zip_name):
+    zipf = zipfile.ZipFile(zip_name, 'w', zipfile.ZIP_DEFLATED)
+    zipitem(source_dir, zipf)
+    zipf.close()
+
+def downloadGithubRepo(url: str):
+    with tempfile.TemporaryDirectory() as dir:
+        Repo.clone_from(url + ".git", dir)
+
+        # Create zip file
+        zipit(dir, 'package.zip')
+
+        # Convert to b64 
+        with open('package.zip', 'rb') as f:
+            b = f.read()
+            return base64.b64encode(b)
 
 def checkGithubUrl(url: str) -> bool:
     parsed_uri = urlparse(url)

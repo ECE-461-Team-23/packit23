@@ -113,7 +113,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
-        # packageUrl = "https://github.com/axios/axios" #TODO: undo
+        packageUrl = "https://github.com/axios/axios" #TODO: undo
         assert helper.checkGithubUrl(packageUrl)
     except Exception:
         print(f"Unable to get/validate package data from request body: {traceback.print_exc()}")
@@ -123,7 +123,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         print(f"Package already exists: {packageName}, {packageVersion}")
         raise HTTPException(status_code=409, detail="Package exists already.")   
 
-    # TODO: Send url to package_rater container, read response
+    # Send url to package_rater container, read response
     # Error if the package has a disqualified rating
     # Check if the package already exists
     try:
@@ -147,16 +147,21 @@ async def package_create(request: Request) -> Union[None, Package]:
         print(f"Unable to get data from package_rater: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
     
-    # TODO: Upload package
+    # Upload package
     print("Uploading package...")
     try:
-        # ingest external packages?
+        # Ingest external packages if required
+        if "Content" in parsed_body:
+            content = parsed_body["Content"]
+        else:
+            content = helper.downloadGithubRepo(packageUrl)
+
         packageId = database.upload_package(name=packageName, 
                                             version=packageVersion, 
                                             author_pk=userid,
                                             rating=rating,
                                             url=packageUrl,
-                                            content=parsed_body.get("Content"))           
+                                            content=content)           
     except Exception:
         print(f"Unable to upload package: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
