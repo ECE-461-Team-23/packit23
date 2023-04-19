@@ -611,7 +611,7 @@ resource "google_storage_bucket" "binary_bucket" {
 
   lifecycle_rule {
     condition {
-      numNewerVersions = 3
+      num_newer_versions = 3
     }
     action {
       type = "Delete"
