@@ -113,7 +113,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
-        packageUrl = "https://github.com/axios/axios" #TODO: undo
+        # packageUrl = "https://github.com/axios/axios" #TODO: undo
         assert helper.checkGithubUrl(packageUrl)
     except Exception:
         print(f"Unable to get/validate package data from request body: {traceback.print_exc()}")
@@ -154,6 +154,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         if "Content" in parsed_body:
             content = parsed_body["Content"]
         else:
+            print("Ingesting Package..")
             content = helper.downloadGithubRepo(packageUrl)
 
         packageId = database.upload_package(name=packageName, 

@@ -167,13 +167,13 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         )
         result = conn.execute(ins)
         rating_pk = result.inserted_primary_key[0]
-        print(f"Rating inserted at id: {rating_pk}")
+        print(f"Rating inserted, rating_pk: {rating_pk}")
 
     # Upload to cloud bucket
-    # TODO: what if it is a URL? do we ingest?
     print("Uploading binary to cloud bucket..")
     binary_pk = rating_pk # binary_pk is same as rating_pk
     bucket.upload_b64_blob(content, str(binary_pk)) 
+    print(f"Uploaded binary, binary_pk:{binary_pk}")
 
     # Upload to packages table
     print("Uploading to packages..")
@@ -193,7 +193,7 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
 
         result = conn.execute(ins)
         package_pk = result.inserted_primary_key[0]
-        print(f"Package inserted at id: {package_pk}")
+        print(f"Package inserted, package_pk: {package_pk}")
         return package_pk
 
 # Functions on startup
