@@ -99,7 +99,7 @@ def package_delete(id: str, request: Request):
     print(f"Request to delete package with id: {packageId}")
     # Check if package exists
     try:
-        packageExists = database.check_if_package_id_exists(packageId)
+        packageExists = database.check_if_package_exists(packageId)
         assert packageExists == True
     except Exception:
         print(f"Error whe checking if package exists: {traceback.print_exc()}")

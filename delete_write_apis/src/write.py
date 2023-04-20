@@ -15,7 +15,7 @@ import traceback
 
 
 from typing import List, Optional, Union
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Response, status
 
 from . import authentication, helper, database
 
@@ -117,13 +117,13 @@ async def package_create(request: Request) -> Union[None, Package]:
         print(f"Unable to get/validate package data from request body: {traceback.print_exc()}")
         raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
     
-    if database.check_if_package_exists(packageName, packageVersion):
+    # Check if the package already exists
+    if database.get_package_id(packageName, packageVersion) != None:
         print(f"Package already exists: {packageName}, {packageVersion}")
         raise HTTPException(status_code=409, detail="Package exists already.")   
 
     # Send url to package_rater container, read response
     # Error if the package has a disqualified rating
-    # Check if the package already exists
     try:
         retry = 0
         while retry < PACKAGE_RATER_RETRY_MAX:
@@ -151,16 +151,19 @@ async def package_create(request: Request) -> Union[None, Package]:
         # Ingest external packages if required
         if "Content" in parsed_body:
             content = parsed_body["Content"]
+            isExternal = False
         else:
             print("Ingesting Package..")
             content = helper.downloadGithubRepo(packageUrl)
+            isExternal = True
 
         packageId = database.upload_package(name=packageName, 
                                             version=packageVersion, 
                                             author_pk=userid,
                                             rating=rating,
                                             url=packageUrl,
-                                            content=content)           
+                                            content=content,
+                                            isExternal=isExternal)           
     except Exception:
         print(f"Unable to upload package: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
@@ -182,16 +185,94 @@ async def package_create(request: Request) -> Union[None, Package]:
 
 
 
-# @router.put('/package/{id}', response_model=None)
-# def package_update(
-#     id: PackageID,
-#     id: PackageID = ...,
-#     x__authorization: AuthenticationToken = Header(..., alias='X-Authorization'),
-#     body: Package = ...,
-# ) -> None:
-#     """
-#     Update this content of the package.
-#     """
-#     pass
+@router.put('/package/{id}', response_model=None)
+async def package_update(id: str, request: Request) -> Union[None, Package]:
+    """
+    Update this content of the package.
+    """
+    # Parse request
+    try:
+        token = request.headers["X-Authorization"]
+        userid = authentication.validate_jwt(token)
+        assert userid != None
 
+        payload = await request.body()
+        payloadDecoded = payload.decode("UTF-8")
+        parsed_body = json.loads(payloadDecoded, strict=False)
 
+        # On package upload, either Content or URL should be set.
+        assert ("Content" in parsed_body["data"]) or ("URL" in parsed_body["data"]) # At least one should be set
+        assert not ( ("Content" in parsed_body["data"]) and ("URL" in parsed_body["data"]) ) # Both shouldn't be set
+    except Exception:
+        print(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.print_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+
+    # Validate URL from request body
+    print(f"HTTP Request body: {parsed_body}")
+    try:
+        packageName, packageVersion, packageId = parsed_body["metadata"]["Name"], parsed_body["metadata"]["Version"], parsed_body["metadata"]["ID"]
+        packageId = int(packageId)
+        _, _, packageUrl = helper.grabPackageDataFromRequest(parsed_body["data"]) # Ignore data from package.json, use metadata given
+        assert packageName != None and packageName != ""
+        assert packageVersion != None and packageVersion != ""
+        assert packageUrl != None and packageUrl != ""
+        assert packageId != None
+        assert int(id) == packageId
+        packageUrl="https://github.com/axios/axios" #TODO: undo
+        assert helper.checkGithubUrl(packageUrl)
+    except Exception:
+        print(f"Unable to get/validate package data from request body: {traceback.print_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+    
+    # Check that name, version, and id match
+    try:
+        db_id = database.get_package_id(packageName, packageVersion)
+        assert db_id == packageId
+    except Exception:
+        print(f"Unable to find match in database: {traceback.print_exc()}")
+        raise HTTPException(status_code=404, detail="Package does not exist.")
+
+    # Send url to package_rater container, read response
+    # Check if the package already exists
+    try:
+        retry = 0
+        while retry < PACKAGE_RATER_RETRY_MAX:
+            print("Sending request to Package Rater")
+            response = requests.post(url=os.environ["PACKAGE_RATER_URL"], data=packageUrl, timeout=90)
+            responseBody = response.text
+            print(f"Response body from Package Rater: {responseBody}")
+            if response.status_code == 500:
+                retry += 1
+            else:
+                break
+        assert responseBody != None and responseBody != ""
+        rating = json.loads(responseBody)   
+    except Exception:
+        print(f"Unable to get data from package_rater: {traceback.print_exc()}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+    # Update package
+    print("Update package...")
+    try:
+        # Ingest external packages if required
+        if "Content" in parsed_body:
+            content = parsed_body["Content"]
+            isExternal = False
+        else:
+            print("Ingesting Package..")
+            content = helper.downloadGithubRepo(packageUrl)
+            isExternal = True
+
+        packageId = database.update_package(id=packageId, 
+                                            author_pk=userid,
+                                            rating=rating,
+                                            url=packageUrl,
+                                            content=content,
+                                            isExternal=isExternal)           
+    except Exception:
+        print(f"Unable to update package: {traceback.print_exc()}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+    print("Update complete")
+
+    # Return response
+    return Response(status_code=status.HTTP_200_OK)
