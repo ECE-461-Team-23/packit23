@@ -14,7 +14,7 @@ from . import authentication, helper, database, bucket
 router = APIRouter()
 
 @router.get("/delete")
-def delete_root():
+async def delete_root():
     return {"Hello": "Delete"}
 
 @router.delete('/reset', response_model=None, status_code=200)
@@ -44,7 +44,7 @@ async def registry_reset(request: Request):
    
 
 @router.delete('/package/byName/{name}', response_model=None)
-def package_by_name_delete(name: str, request: Request):
+async def package_by_name_delete(name: str, request: Request):
     """
     Delete all versions of this package.
     """
@@ -82,7 +82,7 @@ def package_by_name_delete(name: str, request: Request):
 
 
 @router.delete('/package/{id}', response_model=None)
-def package_delete(id: str, request: Request):
+async def package_delete(id: str, request: Request):
     """
     Delete this version of the package.
     """

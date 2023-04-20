@@ -40,7 +40,7 @@ MINIMUM_ACCEPTABLE_NET_SCORE = 0.1 #TODO: figure out requirement for this
 PACKAGE_RATER_RETRY_MAX = 2
 
 @router.get("/write")
-def write_root():
+async def write_root():
     return {"Hello": "Write"}
 
 @router.put('/authenticate', response_model=AuthenticationToken)
