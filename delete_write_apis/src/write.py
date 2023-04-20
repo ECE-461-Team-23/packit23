@@ -263,12 +263,12 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
             content = helper.downloadGithubRepo(packageUrl)
             isExternal = True
 
-        packageId = database.update_package(id=packageId, 
-                                            author_pk=userid,
-                                            rating=rating,
-                                            url=packageUrl,
-                                            content=content,
-                                            isExternal=isExternal)           
+        database.update_package(id=packageId, 
+                                author_pk=userid,
+                                rating=rating,
+                                url=packageUrl,
+                                content=content,
+                                isExternal=isExternal)           
     except Exception:
         print(f"Unable to update package: {traceback.print_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
