@@ -12,7 +12,10 @@ from starlette_context.header_keys import HeaderKeys
 
 def log(*args, **kwargs):
     # Same a print, but attach the request id beforehand
-    header = f"[{context.data.get(HeaderKeys.request_id)}]"
+    if context.exists():
+        header = f"[{context.data.get(HeaderKeys.request_id)}]"
+    else:
+        header = f"[Container-Startup]"
     print(*((header,) + args), **kwargs)
 
 def zipitem(path, ziph):
