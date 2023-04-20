@@ -9,3 +9,21 @@ def upload_b64_blob(contents, destination_blob_name):
 
     blob.upload_from_string(contents)
     print(f"File uploaded to {destination_blob_name}.")
+
+
+def delete_blob(blob_name):
+    """Deletes a blob from the bucket."""
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(os.environ["BUCKET_NAME"])
+    blob = bucket.blob(blob_name)
+    blob.delete()
+    print(f"Blob {blob_name} deleted.")
+
+def empty_bucket():
+    """Empty all objects from a bucket"""
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(os.environ["BUCKET_NAME"])
+    blobs = bucket.list_blobs()
+    for blob in blobs: 
+        blob.delete()
+    print(f"Bucket emptied")

@@ -124,12 +124,25 @@ def get_data_for_user(username: str) -> str:
         else:
             return None
 
+def check_if_package_id_exists(packageId: int):
+    # Check if a given package name & version already exists
+    with engine.begin() as conn:
+        s = packages.select().where(packages.c.id==packageId)
+        result = conn.execute(s)
+        return result.rowcount > 0
+
 def check_if_package_exists(packageName: str, packageVersion: str):
     # Check if a given package name & version already exists
     with engine.begin() as conn:
         s = packages.select().where(packages.c.name==packageName, packages.c.version==packageVersion)
         result = conn.execute(s)
         return result.rowcount > 0
+
+def get_all_versions_of_package(packageName: str) -> list:
+    # Return the pk's of all versions of a package name
+    with engine.begin() as conn:
+        s = packages.select().where(packages.c.name==packageName)
+        return [row.id for row in conn.execute(s)]
 
 def upload_package(name: str, version: str, author_pk: str, rating, url: str, content):
     # Upload to ratings table
@@ -176,6 +189,32 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         package_pk = result.inserted_primary_key[0]
         print(f"Package inserted, package_pk: {package_pk}")
         return package_pk
+
+def delete_package(packageId: int) -> int:
+    # Packages table
+    with engine.begin() as conn:
+        # Get other pk's from package table
+        s = packages.select().where(packages.c.id==packageId)
+        row = conn.execute(s).first()
+        _, _, rating_pk, _, _, binary_pk, _, _, _ = row
+
+        # Delete package
+        d1 = packages.delete().where(packages.c.id==packageId)
+        conn.execute(d1)
+
+    # Delete from ratings table
+    with engine.begin() as conn:
+        d2 = ratings.delete().where(ratings.c.id==rating_pk)
+        conn.execute(d2)
+
+    return binary_pk # to be deleted
+
+def reset_database():
+    with engine.begin() as conn:
+        d1 = packages.delete()
+        conn.execute(d1)
+        d2 = ratings.delete()
+        conn.execute(d2)
 
 # Functions on startup
 engine = connect_with_connector()

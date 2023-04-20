@@ -36,7 +36,7 @@ from .models import (
 
 router = APIRouter()
 
-MINIMUM_ACCEPTABLE_NET_SCORE = 0.1
+MINIMUM_ACCEPTABLE_NET_SCORE = 0.1 #TODO: figure out requirement for this
 PACKAGE_RATER_RETRY_MAX = 2
 
 @router.get("/write")
