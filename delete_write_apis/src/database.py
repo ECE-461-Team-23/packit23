@@ -7,11 +7,9 @@ import pymysql
 
 import sqlalchemy
 from sqlalchemy import inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table, Column, Integer, String, MetaData, LargeBinary, DateTime, Float, Boolean
 
-from . import bucket
+from . import bucket, helper
 
 # Table representations
 metadata = MetaData()
@@ -95,19 +93,19 @@ def check_if_default_exists():
 
 def create_default():
     if not check_if_default_exists():
-        print("Creating tables")
+        helper.log("Creating tables")
         metadata.create_all(engine) # Create tables
 
-        print("Creating users")
+        helper.log("Creating users")
         logins_str = os.environ["USER_LOGINS"]
         logins_json = json.loads(logins_str)
         logins_list = [{"username": u, "password": bytes(p, 'utf-8')} for u, p in logins_json.items()]
 
         with engine.begin() as conn:
             result = conn.execute(users.insert(), logins_list)
-        print("Finished creating tables & users")
+        helper.log("Finished creating tables & users")
     else:
-        print("Tables already detected, not creating")
+        helper.log("Tables already detected, not creating")
 
 def get_data_for_user(username: str) -> str:
     # Return (userid, username, password) for a user
@@ -117,7 +115,7 @@ def get_data_for_user(username: str) -> str:
         if result.rowcount > 1:
             raise Exception(f"Error: {result.rowcount} users found for {username}")
         row = result.fetchone()
-        print(f"get_password_for_user({username}): found {row}")
+        helper.log(f"get_password_for_user({username}): found {row}")
 
         if row:
             return row
@@ -149,7 +147,7 @@ def get_all_versions_of_package(packageName: str) -> list:
 
 def upload_package(name: str, version: str, author_pk: str, rating, url: str, content, isExternal):
     # Upload to ratings table
-    print("Uploading to rating table..")
+    helper.log("Uploading to rating table..")
     with engine.begin() as conn:
         ins = ratings.insert().values(
             busFactor=rating["BUS_FACTOR_SCORE"],
@@ -164,16 +162,16 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         )
         result = conn.execute(ins)
         rating_pk = result.inserted_primary_key[0]
-        print(f"Rating inserted, rating_pk: {rating_pk}")
+        helper.log(f"Rating inserted, rating_pk: {rating_pk}")
 
     # Upload to cloud bucket
-    print("Uploading binary to cloud bucket..")
+    helper.log("Uploading binary to cloud bucket..")
     binary_pk = rating_pk # binary_pk is same as rating_pk
     bucket.upload_b64_blob(content, str(binary_pk)) 
-    print(f"Uploaded binary, binary_pk:{binary_pk}")
+    helper.log(f"Uploaded binary, binary_pk:{binary_pk}")
 
     # Upload to packages table
-    print("Uploading to packages..")
+    helper.log("Uploading to packages..")
     with engine.begin() as conn:
         currentTime = datetime.datetime.now(tz=datetime.timezone.utc)
 
@@ -190,7 +188,7 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
 
         result = conn.execute(ins)
         package_pk = result.inserted_primary_key[0]
-        print(f"Package inserted, package_pk: {package_pk}")
+        helper.log(f"Package inserted, package_pk: {package_pk}")
         return package_pk
 
 def delete_package(packageId: int) -> int:
@@ -221,7 +219,7 @@ def reset_database():
 
 def update_package(id: int, author_pk: str, rating, url: str, content, isExternal):
     # Upload to ratings table
-    print("Uploading to rating table..")
+    helper.log("Uploading to rating table..")
     with engine.begin() as conn:
         ins = ratings.insert().values(
             busFactor=rating["BUS_FACTOR_SCORE"],
@@ -236,16 +234,16 @@ def update_package(id: int, author_pk: str, rating, url: str, content, isExterna
         )
         result = conn.execute(ins)
         rating_pk = result.inserted_primary_key[0]
-        print(f"Rating inserted, rating_pk: {rating_pk}")
+        helper.log(f"Rating inserted, rating_pk: {rating_pk}")
 
     # Upload to cloud bucket
-    print("Uploading binary to cloud bucket..")
+    helper.log("Uploading binary to cloud bucket..")
     binary_pk = rating_pk # binary_pk is same as rating_pk
     bucket.upload_b64_blob(content, str(binary_pk)) 
-    print(f"Uploaded binary, binary_pk:{binary_pk}")
+    helper.log(f"Uploaded binary, binary_pk:{binary_pk}")
 
     # Upload to packages table
-    print("Updating packages table..")
+    helper.log("Updating packages table..")
     with engine.begin() as conn:
         currentTime = datetime.datetime.now(tz=datetime.timezone.utc)
 
@@ -272,7 +270,7 @@ def update_package(id: int, author_pk: str, rating, url: str, content, isExterna
         conn.execute(d1)
     bucket.delete_blob(str(old_binary_pk))
 
-    print(f"Package updated, package_pk: {id}")
+    helper.log(f"Package updated, package_pk: {id}")
 
 
 # Functions on startup

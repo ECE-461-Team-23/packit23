@@ -3,9 +3,24 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse
 
+from starlette.middleware import Middleware
+from starlette_context import context, plugins
+from starlette_context.middleware import RawContextMiddleware
+
 from . import write, delete
 
-app = FastAPI()
+# Add middleware to access requestid using "context.data"
+middleware = [
+    Middleware(
+        RawContextMiddleware,
+        plugins=(
+            plugins.RequestIdPlugin(),
+            plugins.CorrelationIdPlugin()
+        )
+    )
+]
+
+app = FastAPI(middleware=middleware)
 
 app.include_router(delete.router)
 app.include_router(write.router)

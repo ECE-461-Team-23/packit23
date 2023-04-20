@@ -5,6 +5,8 @@ import jwt
 import os
 import traceback
 
+from . import helper
+
 JWT_LIFESPAN = datetime.timedelta(minutes=2880)
 
 
@@ -36,7 +38,7 @@ def validate_jwt(token: str) -> str:
     try:
         key = os.environ["JWT_SECRET"]
     except Exception:
-        print(f"Unable to find environment variable: {traceback.print_exc()}")
+        helper.log(f"Unable to find environment variable: {traceback.format_exc()}")
         return
     
     # Decode JWT
@@ -51,9 +53,9 @@ def validate_jwt(token: str) -> str:
         decoded = jwt.decode(token, key, audience="packit23", algorithms=["HS256"], options=options)
         return decoded["sub"]
     except jwt.ExpiredSignatureError:
-        print("JWT token has expired")
+        helper.log("JWT token has expired")
     except Exception:
-        print(f"Unable to decode JWT: {traceback.print_exc()}")
+        helper.log(f"Unable to decode JWT: {traceback.format_exc()}")
     
     return 
 
