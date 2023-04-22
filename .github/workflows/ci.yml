@@ -17,12 +17,12 @@ jobs:
 
       - name: Lint python backend with black & pylint
         run: |
-          python -m black delete_write_apis/*.py
-          python -m pylint --fail-under=8 delete_write_apis/*.py
+          python -m black delete_write_apis/src/*.py
+          python -m pylint --fail-under=8 delete_write_apis/src/*.py
 
       - name: Test backend apis
         run: |
-          python -m pytest delete_write_apis/ --cov --cov-report=html:coverage_delete
+          python -m pytest delete_write_apis/src/ --cov --cov-report=html:coverage_delete
 
   lint-go-rater-backend:
     runs-on: ubuntu-latest
