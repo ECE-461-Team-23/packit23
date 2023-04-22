@@ -16,6 +16,7 @@ import traceback
 
 from typing import List, Optional, Union
 from fastapi import APIRouter, Request, HTTPException, Response, status
+from fastapi.responses import PlainTextResponse
 
 from . import authentication, helper, database
 
@@ -43,8 +44,8 @@ PACKAGE_RATER_RETRY_MAX = 2
 async def write_root():
     return {"Hello": "Write"}
 
-@router.put('/authenticate', response_model=AuthenticationToken)
-async def create_auth_token(request: Request) -> AuthenticationToken:
+@router.put('/authenticate')
+async def create_auth_token(request: Request):
     # Parsing to make sure valid request (Need to manually decode request to allow unicode characters)
     try:
         payload = await request.body()
@@ -75,7 +76,7 @@ async def create_auth_token(request: Request) -> AuthenticationToken:
         assert userid != None
         token = authentication.generate_jwt(userid)
         assert token != None
-        return AuthenticationToken(__root__=token)
+        return PlainTextResponse(token, status_code=200)
     except Exception:
         helper.log(f"Error when trying to generate token: {traceback.format_exc()}")
         raise HTTPException(status_code=501, detail="Internal server error")
@@ -97,12 +98,9 @@ async def package_create(request: Request) -> Union[None, Package]:
         # On package upload, either Content or URL should be set.
         assert ("Content" in parsed_body) or ("URL" in parsed_body) # At least one should be set
         assert not ( ("Content" in parsed_body) and ("URL" in parsed_body) ) # Both shouldn't be set
-
-        # TODO: Is this the following line required?
-        # assert "JSProgram" in parsed_body
     except Exception:
-        helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid: {traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid.")
 
     # Validate URL from request body
     helper.log(f"HTTP Request body: {parsed_body}")
@@ -111,11 +109,10 @@ async def package_create(request: Request) -> Union[None, Package]:
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
-        # packageUrl = "https://github.com/axios/axios" #TODO: undo
         assert helper.checkGithubUrl(packageUrl)
     except Exception:
         helper.log(f"Unable to get/validate package data from request body: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid")
     
     # Check if the package already exists
     if database.get_package_id(packageName, packageVersion) != None:
@@ -175,12 +172,8 @@ async def package_create(request: Request) -> Union[None, Package]:
         Version=packageVersion,
         ID=PackageID(__root__=packageId),
     )
-
-    if "Content" in parsed_body: 
-        packageData = PackageData(Content=parsed_body["Content"])
-    elif "URL" in parsed_body:
-        packageData = PackageData(URL=parsed_body["URL"])
-
+    packageData = PackageData(Content=content)
+    
     return Package(metadata=packageMetadata, data=packageData)
 
 
@@ -205,7 +198,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         assert not ( ("Content" in parsed_body["data"]) and ("URL" in parsed_body["data"]) ) # Both shouldn't be set
     except Exception:
         helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
     # Validate URL from request body
     helper.log(f"HTTP Request body: {parsed_body}")
@@ -218,11 +211,10 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         assert packageUrl != None and packageUrl != ""
         assert packageId != None
         assert int(id) == packageId
-        packageUrl="https://github.com/axios/axios" #TODO: undo
         assert helper.checkGithubUrl(packageUrl)
     except Exception:
         helper.log(f"Unable to get/validate package data from request body: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
     
     # Check that name, version, and id match
     try:

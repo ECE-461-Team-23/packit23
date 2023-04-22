@@ -120,7 +120,7 @@ def get_data_for_user(username: str) -> str:
         if row:
             return row
         else:
-            return None
+            return None, None, None
 
 def check_if_package_exists(packageId: int):
     # Check if a given package name & version already exists
@@ -274,5 +274,7 @@ def update_package(id: int, author_pk: str, rating, url: str, content, isExterna
 
 
 # Functions on startup
-engine = connect_with_connector()
-create_default()
+def setup_database():
+    global engine
+    engine = connect_with_connector()
+    create_default()

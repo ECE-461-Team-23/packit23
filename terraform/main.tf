@@ -1,7 +1,7 @@
 # Settings
 locals {
   # General
-  github_branch = "main"
+  github_branch = "auth"
   artifact_registry_repo_name = "container-repo"
   region = "us-central1"
 
@@ -668,42 +668,42 @@ resource "google_sql_user" "write-user" {
   password = var.write_user_password
 }
 
-# API Gateway
-resource "google_api_gateway_api" "api_gw" {
-  project = var.project_id
-  provider = google-beta
-  api_id = "my-api"
+# API Gateway - Create by hand for final project
+# resource "google_api_gateway_api" "api_gw" {
+#   project = var.project_id
+#   provider = google-beta
+#   api_id = "my-api"
 
-  depends_on = [ google_project_service.api_gateway_api ]
-}
+#   depends_on = [ google_project_service.api_gateway_api ]
+# }
 
-resource "google_api_gateway_api_config" "api_cfg" {
-  project = var.project_id
-  provider = google-beta
-  api = google_api_gateway_api.api_gw.api_id
-  api_config_id = "api-config"
+# resource "google_api_gateway_api_config" "api_cfg" {
+#   project = var.project_id
+#   provider = google-beta
+#   api = google_api_gateway_api.api_gw.api_id
+#   api_config_id = "api-config"
 
-  openapi_documents {
-    document {
-      path = "api_spec.yaml"
-      contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
-    }
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   openapi_documents {
+#     document {
+#       path = "api_spec.yaml"
+#       contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
+#     }
+#   }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-resource "google_api_gateway_gateway" "gateway" {
-  project = var.project_id
-  region = local.region
-  provider = google-beta
-  api_config = google_api_gateway_api_config.api_cfg.id
-  gateway_id = "api-gw"
+# resource "google_api_gateway_gateway" "gateway" {
+#   project = var.project_id
+#   region = local.region
+#   provider = google-beta
+#   api_config = google_api_gateway_api_config.api_cfg.id
+#   gateway_id = "api-gw"
 
-  depends_on = [google_api_gateway_api_config.api_cfg]
+#   depends_on = [google_api_gateway_api_config.api_cfg]
 
-}
+# }
 
 ## Service Accounts ##
 

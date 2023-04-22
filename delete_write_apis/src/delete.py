@@ -26,13 +26,10 @@ async def registry_reset(request: Request):
         assert userid != None
 
     except Exception:
-        helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        helper.log(f"There is missing field(s) in the AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
     helper.log(f"Reset requested by {userid}")
-    # TODO: Check if user is admin
-    # raise HTTPException(status_code=401, detail="You do not have permission to reset the registry.")
-
     try:
         database.reset_database()
         bucket.empty_bucket()
@@ -54,8 +51,8 @@ async def package_by_name_delete(name: str, request: Request):
         userid = authentication.validate_jwt(token)
         assert userid != None
     except Exception:
-        helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        helper.log(f"There is missing field(s) in the PackageName/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageName/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
     helper.log(f"Request to delete all versions of package: {name}")
     # Check if package exists
@@ -64,7 +61,7 @@ async def package_by_name_delete(name: str, request: Request):
         helper.log(f"Versions found: {pks}")
         assert len(pks) > 0
     except Exception:
-        helper.log(f"Error whe checking if package exists: {traceback.format_exc()}")
+        helper.log(f"Error when checking if package exists: {traceback.format_exc()}")
         raise HTTPException(status_code=404, detail="Package does not exist.")
 
     # Delete all versions
@@ -93,8 +90,8 @@ async def package_delete(id: str, request: Request):
         assert userid != None
         packageId = int(id)
     except Exception:
-        helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
-        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
+        helper.log(f"There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
+        raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
 
     helper.log(f"Request to delete package with id: {packageId}")
     # Check if package exists
