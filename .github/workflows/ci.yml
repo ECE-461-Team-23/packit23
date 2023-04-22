@@ -13,7 +13,7 @@ jobs:
           python-version: 3.9
 
       - name: Install python dependencies
-        run: pip install fastapi pylint black pytest pytest-cov mock
+        run: pip install fastapi pylint black pytest pytest-cov mock httpx
 
       - name: Install python requirements
         run: pip install -r delete_write_apis/requirements.txt
