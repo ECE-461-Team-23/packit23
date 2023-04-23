@@ -10,8 +10,40 @@
 <script src="js/package.js" type="text/javascript" defer></script>
 <script src="components/header.js" type="text/javascript" defer></script>
 <script src="components/footer.js" type="text/javascript" defer></script>
-<header-component></header-component>
-
+<!-- <header-component></header-component> -->
+<header>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/js/bootstrap.min.js"></script>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand nav-link active" href="index.html">Packit</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                    <a class="nav-link" href="registry.html">Registry</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="upload.html">Upload</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="manage.html">Management</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="404lol">404</a>
+                    </li>
+                </ul>
+                <div>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#loginModal"> Login</button>
+                    <button class="btn btn-outline-primary onclick="location.href='settings.html'" type="submit">Settings</button> 
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>
 <body onload="javascript:setupPage()">
     <div class="container">
         <div class="row">
@@ -20,26 +52,25 @@
                     <h2>Package Info</h2>
                     <div class=" mb-3 form-group">
                         <label for="IDSlot">ID:</label>
-                        <input type="text" class="form-control mb-3" id="IDSlot" placeholder="ID not found"
-                            disabled>
+                        <input type="text" class="form-control mb-3" id="IDSlot" placeholder="ID not found" disabled>
                         <label for="NameSlot">Package Name:</label>
                         <input type="text" class="form-control mb-3" id="NameSlot" placeholder="Name not found"
                             disabled>
                         <label for="URLSlot">URL:</label>
                         <input type="text" class="form-control mb-3" id="URLSlot" placeholder="URL not found" disabled>
-                        <label for="VersionSlot">Version No.:</label>
+                        <label for="VersionSlot">Version #:</label>
                         <input type="text" class="form-control mb-3" id="VersionSlot" placeholder="Version not found"
                             disabled>
                         <label for="AuthorSlot">Author Name:</label>
                         <input type="text" class="form-control mb-3" id="AuthorSlot" placeholder="Author not found"
                             disabled>
                     </div>
-                    <i class="bi bi-download"> &nbsp;</i><a href="path/to/your/file.pdf" download>Download Files</a>
+                    <i class="bi bi-download"> &nbsp;</i><a id="DownloadSlot" href="path/to/your/file.pdf"
+                        download>Download Files</a>
                     <br>
                     <hr>
                     <div class="mb-3">
                         <button id="packageEdit" class="btn btn-primary">Edit</button>
-                        <button id="packageSave" class="btn btn-primary">Save</button>
                         <button id="packageDelete" class="btn btn-outline-primary">Delete</button>
                     </div>
                 </div>
@@ -49,8 +80,7 @@
                     <h2>Rating Pane</h2>
                     <div class="form-group">
                         <label for="RatingIDSlot">Rating ID:</label>
-                        <input type="text" class="form-control" id="RatingIDSlot" placeholder="not found"
-                            disabled>
+                        <input type="text" class="form-control" id="RatingIDSlot" placeholder="not found" disabled>
                         <label for="BusFactorSlot">Bus Factor:</label>
                         <input type="text" class="form-control" id="BusFactorSlot" placeholder="not found" disabled>
                         <label for="CorrectnessSlot">Correctness:</label>
@@ -71,4 +101,30 @@
         </div>
     </div>
 </body>
+
+<modal id="packageEditModal">
+    <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class=" mb-3 form-group">
+        <label for="IDSlotModal">ID:</label>
+        <input type="text" class="form-control mb-3" id="IDSlotModal" placeholder="ID not found">
+        <label for="NameSlotModal">Package Name:</label>
+        <input type="text" class="form-control mb-3" id="NameSlotModal" placeholder="Name not found">
+        <label for="URLSlotModal">URL:</label>
+        <input type="text" class="form-control mb-3" id="URLSlotModal" placeholder="URL not found">
+        <label for="VersionSlotModal">Version #:</label>
+        <input type="text" class="form-control mb-3" id="VersionSlotModal" placeholder="Version not found">
+        <label for="AuthorSlotModal">Author Name:</label>
+        <input type="text" class="form-control mb-3" id="AuthorSlotModal" placeholder="Author not found">
+        <div class="modal-footer">
+            <div> 
+                <button id="packageSaveModal" class="btn btn-primary" onclick="savePackage()">Save</button>
+                <button id="packageSaveModal" class="btn btn-outline-primary" onclick="deletePackage()">Delete</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</modal>
 <footer-component></footer-component>

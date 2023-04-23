@@ -42,28 +42,6 @@ class Header extends HTMLElement {
 
     connectedCallback() {
         const shadowRoot = this.attachShadow({ mode: 'closed' });
-    //<i class="bi bi-gear-wide-connected"></i> might replace settings
-    // MODAL EXP
-    // <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalCenterTitle" aria-hidden="true">
-    //     <div class="modal-dialog modal-dialog-centered" role="document">
-    //         <div> 
-    //             <div class="modal-content">
-    //             <div class="modal-header">
-    //                 <h5 class="modal-title" id="loginModalLongTitle">Login/Sign upo</h5>
-    //                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-    //                 <span aria-hidden="true">&times;</span>
-    //                 </button>
-    //             </div>
-    //             <div class="modal-body">
-    //                 something
-    //             </div>
-    //             <div class="modal-footer">
-    //                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    //             </div>
-    //             </div>
-    //         </div>
-    //     </div>
-    // </div>
     
         shadowRoot.appendChild(headerTemplate.content);
     }
