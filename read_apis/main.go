@@ -30,31 +30,32 @@ func print_req_info(r *http.Request) {
 	fmt.Print(r.Method, r.URL, r.Header, r.URL.Query(), r.URL.RawPath, r.Body)
 }
 
-func verifyJWT(endpointHandler func(writer http.ResponseWriter, request *http.Request)) http.HandlerFunc {
-	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		if request.Header["X-Authorization"] != nil {
-			token, err := jwt.Parse(request.Header["X-Authorization"][0], func(token *jwt.Token) (interface{}, error) {
+func verifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header["X-Authorization"] != nil {
+			token, err := jwt.Parse(r.Header["X-Authorization"][0], func(token *jwt.Token) (interface{}, error) {
 				_, ok := token.Method.(*jwt.SigningMethodHMAC)
 				if !ok {
 					fmt.Print("Error validating JWT")
-					return_400_packet(writer, request)
+					return_400_packet(w, r)
 				}
 				return []byte(os.Getenv("JWT_SECRET")), nil
 			})
 			if err != nil {
 				fmt.Print("Error validating JWT")
-				return_400_packet(writer, request)
+				return_400_packet(w, r)
 				return
 			}
 			if token.Valid {
-				endpointHandler(writer, request)
+				endpointHandler(w, r)
 			} else {
-				fmt.Print("Error validating JWT")
-				return_400_packet(writer, request)
+				fmt.Print("Token is not valid")
+				return_400_packet(w, r)
 				return
 			}
 		} else {
-			return_400_packet(writer, request)
+			fmt.Print("No X-Authorization in header")
+			return_400_packet(w, r)
 			return
 		}
 	})
@@ -88,7 +89,7 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 	var packages_metadata []PackageMetadata
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		fmt.Print("\nError reading body of request\n")
+		fmt.Print("Error reading body of request")
 		return_404_packet(w, r)
 		return
 	}
@@ -96,44 +97,22 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 		response_arr = append(response_arr, PackageQuery{q.Name, q.Version})
 	}
 
-	// make version field a range to look for
-	for _, response := range response_arr {
-		// check if response version field contains '-' character without surrounding whitespace, if it doesn't add it
-		char_idx := strings.Index(response.Version, "-")
-		if strings.Contains(response.Version, "-") && response.Version[char_idx-1] != ' ' && response.Version[char_idx+1] != ' ' {
-			response.Version = strings.Replace(response.Version, "-", " - ", -1)
-		}
-		c, err := semver.NewConstraint(response.Version)
-		if err != nil {
-			fmt.Print(err)
-			return_400_packet(w, r)
-			return
-		}
-
-		// query all versions of a package if found in db
-		metadataList, err := getMetadataFromName(db, response.Name)
-		if err != nil {
-			fmt.Print(err)
-			return_400_packet(w, r)
-			return
-		}
-		// check which version is in range
-		for _, md := range metadataList {
-			v, err := semver.NewVersion(md.Version)
-			if err != nil {
-				fmt.Print(err)
-				return_500_packet(w, r)
-				return
-			}
-			if c.Check(v) {
-				packages_metadata = append(packages_metadata, md)
-			}
-		}
+	if len(response_arr) == 1 && response_arr[0].Name == "*" {
+		// return all packages
+		packages_metadata = get_all_packages_metadata(w, r, db, response_arr)
+	} else {
+		// return packages based on query (pagination)
+		packages_metadata = get_paginated_packages_metadata(w, r, db, offset, response_arr)
 	}
 
 	if packages_metadata == nil {
+		return
+	}
+
+	if len(packages_metadata) == 0 {
 		fmt.Print("packages response is empty")
 	}
+
 	json.NewEncoder(w).Encode(packages_metadata)
 	return_200_packet(w, r)
 }
@@ -318,7 +297,7 @@ func handle_package_byname(w http.ResponseWriter, r *http.Request) {
 	// iterate through versions of package and get rest of history
 	for i, md := range metadataList {
 		var history PackageHistoryEntry
-		history.User = &User{Name: "test", IsAdmin: false}
+		history.User = &User{Name: "nil", IsAdmin: true}
 		history.Date, err = time.Parse("2006-01-02T15:04:05Z", times[i])
 		if err != nil {
 			fmt.Print(err)
@@ -326,7 +305,7 @@ func handle_package_byname(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		history.PackageMetadata = &md
-		history.Action = "Uploaded"
+		history.Action = ""
 		ret = append(ret, history)
 	}
 

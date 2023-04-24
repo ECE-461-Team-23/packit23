@@ -18,7 +18,7 @@ func return_404_packet(w http.ResponseWriter, r *http.Request) {
 
 func return_413_packet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusRequestEntityTooLarge)
-	w.Write([]byte("413 - Request entity too large"))
+	w.Write([]byte("413 - Too many packages returned"))
 }
 
 func return_500_packet(w http.ResponseWriter, r *http.Request) {
