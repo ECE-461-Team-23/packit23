@@ -40,10 +40,6 @@ var flag int = 0
 func SendRequests(client *github.Client, graphqlClient *githubv4.Client, ctx context.Context, graphqlCtx context.Context, repo *models.Repository, logger *zap.Logger, cache *cache.Cache) (f int) {
 	flag = 0
 
-	GetDependencyQuery(graphqlClient, ctx, repo, logger, cache)
-	if flag == 1 {
-		return flag
-	}
 	GetStars(graphqlClient, ctx, repo, logger, cache)
 	if flag == 1 {
 		return flag
@@ -72,7 +68,10 @@ func SendRequests(client *github.Client, graphqlClient *githubv4.Client, ctx con
 	if flag == 1 {
 		return flag
 	}
-
+	GetDependencyQuery(graphqlClient, ctx, repo, logger, cache)
+	if flag == 1 {
+		return flag
+	}
 	return flag
 }
 
@@ -193,28 +192,42 @@ func GetDependencyQuery(client *githubv4.Client, ctx context.Context, repo *mode
 	variables := map[string]interface{}{ // variables to dynamically populate the graphql query structure
 		"owner": githubv4.String(repo.Owner),
 		"name":  githubv4.String(repo.Name),
+		"first": githubv4.Int(10),
+		"after": (*githubv4.String)(nil),
 	}
-	err := client.Query(ctx, &models.Dependency, variables)
+	var allDependencies [](models.DependenciesConnection)
 
-	if err != nil {
-		flag = 1
-		newError := error.NewRequestError("GraphQL", err.Error(), 400)
-		fmt.Println(newError.Error())
-		logger.Info(newError.Error())
-		return
+	// logger.Info("checkpoint 1")
+	for {
+		err := client.Query(ctx, &models.Dependency, variables)
+
+		if err != nil {
+			// flag = 1
+			newError := error.NewRequestError("GraphQL", err.Error(), 400)
+			repo.PinnedVersions = 0
+			repo.DependencyCount = 1
+			// fmt.Println(newError.Error())
+			logger.Info(newError.Error())
+			return
+		}
+		// logger.Info("checkpoint 2")
+		for _, edge := range models.Dependency.Repository.DependencyGraphManifests.Edges {
+			allDependencies = append(allDependencies, edge.Node.Dependencies)
+
+		}
+
+		if !models.Dependency.Repository.DependencyGraphManifests.PageInfo.HasNextPage {
+			break
+		}
+
+		variables["after"] = models.Dependency.Repository.DependencyGraphManifests.PageInfo.EndCursor
 	}
-	// numNodes := models.Dependency.Repository.DependencyGraphManifests.TotalCount
-	numNodes := len(models.Dependency.Repository.DependencyGraphManifests.Nodes)
 
-	edges := models.Dependency.Repository.DependencyGraphManifests.Edges
 	re, _ := regexp.Compile(">|>=|<|<=|`^`")
-	// logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
-	for i := 0; i < numNodes; i++ {
-		dependency := edges[i].Node.Dependencies
-		repo.DependencyCount += dependency.TotalCount
-		// logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
-		for j := 0; j < dependency.TotalCount; j++ {
-			requirement := dependency.Nodes[j].Requirements
+	for _, depend := range allDependencies {
+		repo.DependencyCount += depend.TotalCount
+		for j := 0; j < depend.TotalCount; j++ {
+			requirement := depend.Nodes[j].Requirements
 			matched := re.MatchString(requirement) // cases where major + minor version is NOT pinned
 			if !matched {
 				repo.PinnedVersions += 1
@@ -222,11 +235,11 @@ func GetDependencyQuery(client *githubv4.Client, ctx context.Context, repo *mode
 		}
 	}
 
-	// logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
-	// logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
-	// logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
+	logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
+	// // logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
+	// // logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
 
-	// logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
+	// // logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
 
 }
 
