@@ -14,12 +14,14 @@ from . import authentication, helper, database, bucket
 router = APIRouter()
 
 @router.get("/delete")
-async def delete_root():
+async def delete_root(request: Request):
+    await helper.log_request(request)
     return {"Hello": "Delete"}
 
 @router.delete('/reset', response_model=None, status_code=200)
 async def registry_reset(request: Request):
     # Parse request
+    await helper.log_request(request)
     try:
         token = request.headers["X-Authorization"]
         userid = authentication.validate_jwt(token)
@@ -45,6 +47,7 @@ async def package_by_name_delete(name: str, request: Request):
     """
     Delete all versions of this package.
     """
+    await helper.log_request(request)
     # Parse request
     try:
         token = request.headers["X-Authorization"]
@@ -83,6 +86,7 @@ async def package_delete(id: str, request: Request):
     """
     Delete this version of the package.
     """
+    await helper.log_request(request)
     # Parse request
     try:
         token = request.headers["X-Authorization"]

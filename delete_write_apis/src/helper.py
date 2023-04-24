@@ -9,6 +9,18 @@ from git import Repo
 from urllib.parse import urlparse
 from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
+from fastapi import Request
+
+async def log_request(request: Request):
+    statements = ["|Method:", request.method,
+                  "|URL:", request.url,
+                  "|Headers:", request.headers,
+                  "|Query params:", request.query_params,
+                  "|Path params:", request.path_params,
+                  "|Client:", request.client,
+                  "|Body:", await request.body()
+    ]
+    log(*statements)
 
 def log(*args, **kwargs):
     # Same a print, but attach the request id beforehand
@@ -44,6 +56,7 @@ def downloadGithubRepo(url: str):
             return base64.b64encode(b)
 
 def checkGithubUrl(url: str) -> bool:
+    log(f"checkGithubUrl: {url}")
     parsed_uri = urlparse(url)
     if parsed_uri.netloc == "github.com":
         return True

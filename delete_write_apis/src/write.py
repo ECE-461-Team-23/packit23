@@ -41,11 +41,13 @@ MINIMUM_ACCEPTABLE_NET_SCORE = 0.1 #TODO: figure out requirement for this
 PACKAGE_RATER_RETRY_MAX = 2
 
 @router.get("/write")
-async def write_root():
+async def write_root(request: Request):
+    await helper.log_request(request)
     return {"Hello": "Write"}
 
 @router.put('/authenticate')
 async def create_auth_token(request: Request):
+    await helper.log_request(request)
     # Parsing to make sure valid request (Need to manually decode request to allow unicode characters)
     try:
         payload = await request.body()
@@ -85,6 +87,7 @@ async def create_auth_token(request: Request):
 
 @router.post('/package', response_model=None, status_code=201)
 async def package_create(request: Request) -> Union[None, Package]:
+    await helper.log_request(request)
     # Parse request
     try:
         token = request.headers["X-Authorization"]
@@ -173,7 +176,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         ID=PackageID(__root__=packageId),
     )
     packageData = PackageData(Content=content)
-    
+
     return Package(metadata=packageMetadata, data=packageData)
 
 
@@ -183,6 +186,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     """
     Update this content of the package.
     """
+    await helper.log_request(request)
     # Parse request
     try:
         token = request.headers["X-Authorization"]
