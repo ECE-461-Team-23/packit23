@@ -52,8 +52,9 @@ async def create_auth_token(request: Request):
     try:
         payload = await request.body()
         payloadDecoded = payload.decode("UTF-8")
+        helper.log("payloadDecoded: ", payloadDecoded)
         parsed_body = json.loads(payloadDecoded, strict=False)
-
+        helper.log("parsed_body: ", parsed_body)
         username = parsed_body["User"]["name"]
         password = parsed_body["Secret"]["password"]
 
@@ -67,6 +68,7 @@ async def create_auth_token(request: Request):
     # See if username and password are valid
     try:
         userid, _, stored_password = database.get_data_for_user(username)
+        helper.log("userid, stored_password:", userid, stored_password)
         assert stored_password != None
         assert authentication.check_password(password, stored_password)
     except Exception:
@@ -77,6 +79,7 @@ async def create_auth_token(request: Request):
     try:
         assert userid != None
         token = authentication.generate_jwt(userid)
+        helper.log("token: ", token)
         assert token != None
         return PlainTextResponse(token, status_code=200)
     except Exception:
@@ -96,7 +99,9 @@ async def package_create(request: Request) -> Union[None, Package]:
 
         payload = await request.body()
         payloadDecoded = payload.decode("UTF-8")
+        helper.log("payloadDecoded: ", payloadDecoded)
         parsed_body = json.loads(payloadDecoded, strict=False)
+        helper.log("parsed_body: ", parsed_body)
 
         # On package upload, either Content or URL should be set.
         assert ("Content" in parsed_body) or ("URL" in parsed_body) # At least one should be set
@@ -109,6 +114,7 @@ async def package_create(request: Request) -> Union[None, Package]:
     helper.log(f"HTTP Request body: {parsed_body}")
     try:
         packageName, packageVersion, packageUrl = helper.grabPackageDataFromRequest(parsed_body)
+        helper.log("packageName, packageVersion, packageUrl: ", packageName, packageVersion, packageUrl)
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
@@ -137,6 +143,7 @@ async def package_create(request: Request) -> Union[None, Package]:
                 break
         assert responseBody != None and responseBody != ""
         rating = json.loads(responseBody)
+        helper.log("rating: ", rating)
         netscore = rating["NET_SCORE"]
         if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
             helper.log(f"Package has a disqualifying rating: {rating}")
@@ -194,7 +201,9 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         assert userid != None
 
         payload = await request.body()
+        helper.log("payloadDecoded: ", payloadDecoded)
         payloadDecoded = payload.decode("UTF-8")
+        helper.log("parsed_body: ", parsed_body)
         parsed_body = json.loads(payloadDecoded, strict=False)
 
         # On package upload, either Content or URL should be set.
@@ -208,8 +217,10 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     helper.log(f"HTTP Request body: {parsed_body}")
     try:
         packageName, packageVersion, packageId = parsed_body["metadata"]["Name"], parsed_body["metadata"]["Version"], parsed_body["metadata"]["ID"]
+        helper.log("packageName, packageVersion, packageUrl: ", packageName, packageVersion, packageUrl)
         packageId = int(packageId)
         _, _, packageUrl = helper.grabPackageDataFromRequest(parsed_body["data"]) # Ignore data from package.json, use metadata given
+        helper.log("packageId, packageUrl", packageId, packageUrl)
         assert packageName != None and packageName != ""
         assert packageVersion != None and packageVersion != ""
         assert packageUrl != None and packageUrl != ""
@@ -223,6 +234,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     # Check that name, version, and id match
     try:
         db_id = database.get_package_id(packageName, packageVersion)
+        helper.log("db_id", db_id)
         assert db_id == packageId
     except Exception:
         helper.log(f"Unable to find match in database: {traceback.format_exc()}")
