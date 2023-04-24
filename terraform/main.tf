@@ -1,7 +1,7 @@
 # Settings
 locals {
   # General
-  github_branch = "auth"
+  github_branch = "main"
   artifact_registry_repo_name = "container-repo"
   region = "us-central1"
 
