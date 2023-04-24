@@ -53,6 +53,9 @@ func verifyJWT(endpointHandler func(writer http.ResponseWriter, request *http.Re
 				return_400_packet(writer, request)
 				return
 			}
+		} else {
+			return_400_packet(writer, request)
+			return
 		}
 	})
 }
