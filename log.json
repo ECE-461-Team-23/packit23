@@ -1,0 +1,46 @@
+{"level":"INFO","ts":"2023-04-24 00:31:47","caller":"cmd/main.go:28","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:31:52","caller":"github_apis/api.go:230","msg":"Dependency count: 22"}
+{"level":"INFO","ts":"2023-04-24 00:31:54","caller":"github_apis/api.go:230","msg":"Dependency count: 44"}
+{"level":"INFO","ts":"2023-04-24 00:31:58","caller":"github_apis/api.go:230","msg":"Dependency count: 14"}
+{"level":"INFO","ts":"2023-04-24 00:32:00","caller":"github_apis/api.go:230","msg":"Dependency count: 28"}
+{"level":"INFO","ts":"2023-04-24 00:32:04","caller":"github_apis/api.go:230","msg":"Dependency count: 20"}
+{"level":"INFO","ts":"2023-04-24 00:32:06","caller":"github_apis/api.go:230","msg":"Dependency count: 40"}
+{"level":"INFO","ts":"2023-04-24 00:32:11","caller":"github_apis/api.go:230","msg":"Dependency count: 17"}
+{"level":"INFO","ts":"2023-04-24 00:32:13","caller":"github_apis/api.go:230","msg":"Dependency count: 34"}
+{"level":"INFO","ts":"2023-04-24 00:32:23","caller":"github_apis/api.go:230","msg":"Dependency count: 11"}
+{"level":"INFO","ts":"2023-04-24 00:32:30","caller":"cmd/main.go:28","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:32:36","caller":"github_apis/api.go:202","msg":"Status Code: 400, Request Type: GraphQL, Error Message: Something went wrong while executing your query. Please include `D667:07E0:2778854:520C027:64460661` when reporting this issue."}
+{"level":"INFO","ts":"2023-04-24 00:32:37","caller":"github_apis/api.go:230","msg":"Dependency count: 23"}
+{"level":"INFO","ts":"2023-04-24 00:32:42","caller":"github_apis/api.go:230","msg":"Dependency count: 14"}
+{"level":"INFO","ts":"2023-04-24 00:32:43","caller":"github_apis/api.go:230","msg":"Dependency count: 28"}
+{"level":"INFO","ts":"2023-04-24 00:32:44","caller":"github_apis/api.go:172","msg":"Status Code: 403, Request Type: REST, Error Message: GET https://api.github.com/search/issues?q=org:nullivex+repo:nodist+created:%3E2023-04-17+is:pr+is:open: 403 API rate limit of 30 still exceeded until 2023-04-24 00:32:48 -0400 EDT, not making remote request. [rate reset in 3s]"}
+{"level":"INFO","ts":"2023-04-24 00:32:45","caller":"github_apis/api.go:144","msg":"Status Code: 403, Request Type: REST, Error Message: GET https://api.github.com/search/issues?q=org:lodash+repo:lodash+is:pr+is:closed+reason:completed: 403 API rate limit of 30 still exceeded until 2023-04-24 00:32:48 -0400 EDT, not making remote request. [rate reset in 3s]"}
+{"level":"INFO","ts":"2023-04-24 00:32:45","caller":"github_apis/api.go:144","msg":"Status Code: 403, Request Type: REST, Error Message: GET https://api.github.com/search/issues?q=org:browserify+repo:browserify+is:pr+is:closed+reason:completed: 403 API rate limit of 30 still exceeded until 2023-04-24 00:32:48 -0400 EDT, not making remote request. [rate reset in 3s]"}
+{"level":"INFO","ts":"2023-04-24 00:32:45","caller":"github_apis/api.go:144","msg":"Status Code: 403, Request Type: REST, Error Message: GET https://api.github.com/search/issues?q=org:facebook+repo:react+is:pr+is:closed+reason:completed: 403 API rate limit of 30 still exceeded until 2023-04-24 00:32:48 -0400 EDT, not making remote request. [rate reset in 2s]"}
+{"level":"INFO","ts":"2023-04-24 00:33:26","caller":"cmd/main.go:28","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:33:32","caller":"github_apis/api.go:230","msg":"Dependency count: 22"}
+{"level":"INFO","ts":"2023-04-24 00:33:33","caller":"github_apis/api.go:230","msg":"Dependency count: 44"}
+{"level":"INFO","ts":"2023-04-24 00:33:37","caller":"github_apis/api.go:230","msg":"Dependency count: 14"}
+{"level":"INFO","ts":"2023-04-24 00:33:39","caller":"github_apis/api.go:230","msg":"Dependency count: 28"}
+{"level":"INFO","ts":"2023-04-24 00:33:43","caller":"github_apis/api.go:230","msg":"Dependency count: 20"}
+{"level":"INFO","ts":"2023-04-24 00:33:45","caller":"github_apis/api.go:230","msg":"Dependency count: 40"}
+{"level":"INFO","ts":"2023-04-24 00:33:49","caller":"github_apis/api.go:230","msg":"Dependency count: 17"}
+{"level":"INFO","ts":"2023-04-24 00:33:53","caller":"github_apis/api.go:230","msg":"Dependency count: 34"}
+{"level":"INFO","ts":"2023-04-24 00:34:03","caller":"github_apis/api.go:230","msg":"Dependency count: 11"}
+{"level":"INFO","ts":"2023-04-24 00:34:11","caller":"github_apis/api.go:230","msg":"Dependency count: 22"}
+{"level":"INFO","ts":"2023-04-24 00:34:19","caller":"github_apis/api.go:202","msg":"Status Code: 400, Request Type: GraphQL, Error Message: timedout"}
+{"level":"INFO","ts":"2023-04-24 00:40:44","caller":"cmd/main.go:28","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:40:50","caller":"github_apis/api.go:230","msg":"Dependency count: 22"}
+{"level":"INFO","ts":"2023-04-24 00:40:51","caller":"github_apis/api.go:230","msg":"Dependency count: 44"}
+{"level":"INFO","ts":"2023-04-24 00:40:55","caller":"github_apis/api.go:230","msg":"Dependency count: 14"}
+{"level":"INFO","ts":"2023-04-24 00:40:57","caller":"github_apis/api.go:230","msg":"Dependency count: 28"}
+{"level":"INFO","ts":"2023-04-24 00:41:01","caller":"github_apis/api.go:230","msg":"Dependency count: 20"}
+{"level":"INFO","ts":"2023-04-24 00:41:03","caller":"github_apis/api.go:230","msg":"Dependency count: 40"}
+{"level":"INFO","ts":"2023-04-24 00:41:09","caller":"github_apis/api.go:230","msg":"Dependency count: 17"}
+{"level":"INFO","ts":"2023-04-24 00:41:11","caller":"github_apis/api.go:230","msg":"Dependency count: 34"}
+{"level":"INFO","ts":"2023-04-24 00:41:22","caller":"github_apis/api.go:230","msg":"Dependency count: 11"}
+{"level":"INFO","ts":"2023-04-24 00:41:30","caller":"github_apis/api.go:230","msg":"Dependency count: 22"}
+{"level":"INFO","ts":"2023-04-24 00:41:39","caller":"github_apis/api.go:202","msg":"Status Code: 400, Request Type: GraphQL, Error Message: timedout"}
+{"level":"INFO","ts":"2023-04-24 00:41:45","caller":"github_apis/api.go:202","msg":"Status Code: 400, Request Type: GraphQL, Error Message: timedout"}
+{"level":"INFO","ts":"2023-04-24 00:49:31","caller":"cmd/main.go:86","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:51:38","caller":"cmd/main.go:86","msg":"Starting Application"}
