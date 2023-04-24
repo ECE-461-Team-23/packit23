@@ -121,12 +121,6 @@ func CreateRESTClient() (*github.Client, context.Context) { // function to creat
 }
 
 func CreateGQLClient() (*githubv4.Client, context.Context) { // function to creategithub GraphQL api client
-	// ctx := context.Background() // create empty context
-	// cfg := config.NewConfig()
-	// ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.GithubToken}) // configure auth header for the client
-	// tc := oauth2.NewClient(ctx, ts)                                             // create new http client
-	// graphqlClient := githubv4.NewClient(tc)                                     // create new github graphql api client from the http client template
-
 	ctx := context.Background() // create empty context
 	cfg := config.NewConfig()
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.GithubToken}) // configure auth header for the client
@@ -159,7 +153,7 @@ func GetCodeReview(client *github.Client, ctx context.Context, repo *models.Repo
 	// logger.Info(fmt.Sprintf("Get PRs with code reviews: %d", *crs.Total))
 
 	repo.CodeReviewScore = float64(*crs.Total) / float64(*prs.Total)
-	logger.Info(fmt.Sprintf("Get CodeReviewScore: %f", repo.CodeReviewScore))
+	// logger.Info(fmt.Sprintf("Get CodeReviewScore: %f", repo.CodeReviewScore))
 
 }
 
@@ -236,10 +230,10 @@ func GetDependencyQuery(client *githubv4.Client, ctx context.Context, repo *mode
 	}
 
 	logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
-	// // logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
-	// // logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
+	// logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
+	// logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
 
-	// // logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
+	// logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
 
 }
 
