@@ -44,3 +44,20 @@
 {"level":"INFO","ts":"2023-04-24 00:41:45","caller":"github_apis/api.go:202","msg":"Status Code: 400, Request Type: GraphQL, Error Message: timedout"}
 {"level":"INFO","ts":"2023-04-24 00:49:31","caller":"cmd/main.go:86","msg":"Starting Application"}
 {"level":"INFO","ts":"2023-04-24 00:51:38","caller":"cmd/main.go:86","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:53:15","caller":"cmd/main.go:86","msg":"Starting Application"}
+{"level":"INFO","ts":"2023-04-24 00:55:44","caller":"cmd/main.go:26","msg":"Received POST request"}
+{"level":"INFO","ts":"2023-04-24 00:55:44","caller":"cmd/main.go:31","msg":"Headers:\nAccept=[*/*]\nUser-Agent=[curl/8.0.1]\n"}
+{"level":"INFO","ts":"2023-04-24 00:55:44","caller":"cmd/main.go:39","msg":"Body:\n\n"}
+{"level":"WARN","ts":"2023-04-24 00:55:44","caller":"cmd/main.go:54","msg":"Error parsing body (Invalid Url type): "}
+{"level":"INFO","ts":"2023-04-24 00:55:58","caller":"cmd/main.go:26","msg":"Received POST request"}
+{"level":"INFO","ts":"2023-04-24 00:55:58","caller":"cmd/main.go:31","msg":"Headers:\nUser-Agent=[curl/7.84.0]\nAccept=[*/*]\nContent-Type=[application/json]\nContent-Length=[30]\n"}
+{"level":"INFO","ts":"2023-04-24 00:55:58","caller":"cmd/main.go:39","msg":"Body:\nhttps://github.com/axios/axios\n"}
+{"level":"INFO","ts":"2023-04-24 00:55:58","caller":"cli/cli.go:92","msg":"Scoring....."}
+{"level":"INFO","ts":"2023-04-24 00:56:08","caller":"github_apis/api.go:230","msg":"Dependency count: 59"}
+{"level":"INFO","ts":"2023-04-24 00:56:15","caller":"github_apis/api.go:230","msg":"Dependency count: 118"}
+{"level":"INFO","ts":"2023-04-24 00:56:56","caller":"cmd/main.go:26","msg":"Received POST request"}
+{"level":"INFO","ts":"2023-04-24 00:56:56","caller":"cmd/main.go:31","msg":"Headers:\nContent-Length=[30]\nUser-Agent=[curl/7.84.0]\nAccept=[*/*]\nContent-Type=[application/json]\n"}
+{"level":"INFO","ts":"2023-04-24 00:56:56","caller":"cmd/main.go:39","msg":"Body:\nhttps://github.com/axios/axios\n"}
+{"level":"INFO","ts":"2023-04-24 00:56:56","caller":"cli/cli.go:92","msg":"Scoring....."}
+{"level":"INFO","ts":"2023-04-24 00:57:05","caller":"github_apis/api.go:230","msg":"Dependency count: 59"}
+{"level":"INFO","ts":"2023-04-24 00:57:12","caller":"github_apis/api.go:230","msg":"Dependency count: 118"}
