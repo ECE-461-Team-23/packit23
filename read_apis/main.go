@@ -88,7 +88,7 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 	var packages_metadata []PackageMetadata
 	err = json.NewDecoder(r.Body).Decode(&response_arr)
 	if err != nil {
-		fmt.Print("Error reading body of request")
+		fmt.Print(err)
 		return_404_packet(w, r)
 		return
 	}
@@ -327,7 +327,7 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 	var listoflists [][]PackageMetadata
 	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
-		fmt.Print("\nError reading body of request\n")
+		fmt.Print(err)
 		return_404_packet(w, r)
 		return
 	}
@@ -361,7 +361,7 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 		if !cont {
 			mdl, err := getMetadataFromName(db, md.Name)
 			if err != nil {
-				fmt.Print("Error getting metadata from name")
+				fmt.Print(err)
 				return_500_packet(w, r)
 				return
 			}
@@ -375,7 +375,7 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 			// create a semantic version for each version
 			sv, err := semver.NewVersion(md.Version)
 			if err != nil {
-				fmt.Print("Error creating semantic version")
+				fmt.Print(err)
 				return_413_packet(w, r)
 				return
 			}
