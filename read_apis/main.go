@@ -217,13 +217,17 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for res.Next() {
+	if res.Next() {
 		err = res.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
 		if err != nil {
 			fmt.Print(err)
 			return_400_packet(w, r)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - Package does not exist."))
+		return
 	}
 
 	json.NewEncoder(w).Encode(ratings)
