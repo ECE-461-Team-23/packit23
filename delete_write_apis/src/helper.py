@@ -11,6 +11,22 @@ from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 from fastapi import Request
 
+def decode_body(payload: bytes):
+    # Try UTF-8. Otherwise, try unicode-escape
+    try:
+        payloadDecoded = payload.decode("UTF-8")
+        log("(UTF-8) payloadDecoded: ", payloadDecoded)
+        parsed_body = json.loads(payloadDecoded, strict=False)
+        log("UTF-8) parsed_body: ", parsed_body)
+        return parsed_body
+    except Exception:
+        log("UTF-8 parsing failed")
+        payloadDecoded = payload.decode("unicode-escape")
+        log("(unicode-escape) payloadDecoded: ", payloadDecoded)
+        parsed_body = json.loads(payloadDecoded, strict=False)
+        log("(unicode-escape) parsed_body: ", parsed_body)
+        return parsed_body
+
 async def log_request(request: Request):
     statements = ["|Method:", request.method,
                   "|URL:", request.url,

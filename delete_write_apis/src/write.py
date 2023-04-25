@@ -52,10 +52,7 @@ async def create_auth_token(request: Request):
     try:
         payload = await request.body()
         helper.log("payload: ", payload)
-        payloadDecoded = payload.decode("UTF-8")
-        helper.log("payloadDecoded: ", payloadDecoded)
-        parsed_body = json.loads(payloadDecoded, strict=False)
-        helper.log("parsed_body: ", parsed_body)
+        parsed_body = helper.decode_body(payload)
         username = parsed_body["User"]["name"]
         password = parsed_body["Secret"]["password"]
         helper.log("password: ", password)
@@ -106,10 +103,7 @@ async def package_create(request: Request) -> Union[None, Package]:
         assert userid != None
 
         payload = await request.body()
-        payloadDecoded = payload.decode("UTF-8")
-        helper.log("payloadDecoded: ", payloadDecoded)
-        parsed_body = json.loads(payloadDecoded, strict=False)
-        helper.log("parsed_body: ", parsed_body)
+        parsed_body = helper.decode_body(payload)
 
         # On package upload, either Content or URL should be set.
         assert ("Content" in parsed_body) or ("URL" in parsed_body) # At least one should be set
@@ -209,10 +203,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         assert userid != None
 
         payload = await request.body()
-        helper.log("payloadDecoded: ", payloadDecoded)
-        payloadDecoded = payload.decode("UTF-8")
-        helper.log("parsed_body: ", parsed_body)
-        parsed_body = json.loads(payloadDecoded, strict=False)
+        parsed_body = helper.decode_body(payload)
 
         # On package upload, either Content or URL should be set.
         assert ("Content" in parsed_body["data"]) or ("URL" in parsed_body["data"]) # At least one should be set
