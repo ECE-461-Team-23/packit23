@@ -17,6 +17,8 @@ def find_auth_token(request: Request):
         _, token = header.split(" ")
     else:
         token = header
+    
+    log("Token found in header: ", token)
     return token
 
 def decode_body(payload: bytes):
