@@ -102,6 +102,7 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if packages_metadata == nil {
+		// error code is already written
 		return
 	}
 
@@ -205,6 +206,7 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return_500_packet(w, r)
 		return
 	}
+	defer db.Close()
 
 	var ratings PackageRating
 	vars := mux.Vars(r)
@@ -222,6 +224,7 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	defer rows.Close()
 	if rows.Next() {
 		err = rows.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
 		if err != nil {
@@ -299,6 +302,13 @@ func handle_package_byname(w http.ResponseWriter, r *http.Request) {
 		times = append(times, timevar)
 	}
 
+	if len(metadataList) == 0 || len(times) == 0 {
+		fmt.Print("No such package.")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - No such package."))
+		return
+	}
+
 	// iterate through versions of package and get rest of history
 	for i, md := range metadataList {
 		var history PackageHistoryEntry
@@ -374,8 +384,18 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 				return_500_packet(w, r)
 				return
 			}
-			listoflists = append(listoflists, mdl)
+			if len(mdl) != 0 {
+				listoflists = append(listoflists, mdl)
+			}
 		}
+	}
+
+	// check if no packages are found
+	if len(listoflists) == 0 {
+		fmt.Print("No package found under this regex.")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - No package found under this regex."))
+		return
 	}
 
 	for i, md_list := range listoflists {
