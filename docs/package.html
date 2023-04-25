@@ -66,14 +66,14 @@
                         <label for="NameSlot">Package Name:</label>
                         <input type="text" class="form-control mb-3" id="NameSlot" placeholder="Name not found"
                             disabled>
-                        <label for="URLSlot">URL:</label>
-                        <input type="text" class="form-control mb-3" id="URLSlot" placeholder="URL not found" disabled>
+                        <!-- <label for="URLSlot">URL:</label>
+                        <input type="text" class="form-control mb-3" id="URLSlot" placeholder="URL not found" disabled> -->
                         <label for="VersionSlot">Version #:</label>
                         <input type="text" class="form-control mb-3" id="VersionSlot" placeholder="Version not found"
                             disabled>
-                        <label for="AuthorSlot">Author Name:</label>
+                        <!-- <label for="AuthorSlot">Author Name:</label>
                         <input type="text" class="form-control mb-3" id="AuthorSlot" placeholder="Author not found"
-                            disabled>
+                            disabled> -->
                     </div>
                     <i class="bi bi-download"> &nbsp;</i><a id="DownloadSlot" href="path/to/your/file.pdf"
                         download>Download Files</a>
@@ -84,7 +84,10 @@
                             data-bs-target="#packageEditModal">
                             Open Edit Pane
                         </button>
-                        <button id="packageDelete" class="btn btn-outline-primary">Delete Package from Registry</button>
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#packageDeleteModal">
+                            Delete Package from Registry
+                        </button>
                     </div>
                 </div>
             </div>
@@ -117,11 +120,11 @@
 <!-- Modal -->
 
 <div class="modal fade" id="packageEditModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Package</h1>
+                <h1 class="modal-title fs-5" id="editModalLabel">Edit Package</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -130,12 +133,12 @@
                     <input type="text" class="form-control mb-3" id="IDSlotModal">
                     <label for="NameSlotModal">Package Name:</label>
                     <input type="text" class="form-control mb-3" id="NameSlotModal">
-                    <label for="URLSlotModal">URL:</label>
-                    <input type="text" class="form-control mb-3" id="URLSlotModal">
+                    <!-- <label for="URLSlotModal">URL:</label>
+                    <input type="text" class="form-control mb-3" id="URLSlotModal"> -->
                     <label for="VersionSlotModal">Version #:</label>
                     <input type="text" class="form-control mb-3" id="VersionSlotModal">
-                    <label for="AuthorSlotModal">Author Name:</label>
-                    <input type="text" class="form-control mb-3" id="AuthorSlotModal">
+                    <!-- <label for="AuthorSlotModal">Author Name:</label>
+                    <input type="text" class="form-control mb-3" id="AuthorSlotModal"> -->
                 </div>
             </div>
             <div class="modal-footer">
@@ -144,6 +147,22 @@
                     <!-- <button id="packageDeleteModal" class="btn btn-outline-primary"
                         onclick="deletePackage()">Delete</button> -->
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="packageDeleteModal" tabindex="-1" aria-labelledby="packageDeleteModal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="packageDeleteModalLabel">Are you sure you want to delete this package?</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-footer">
+                <div>
+                    <button id="packageDeleteBtn" class="btn btn-primary" onclick="deletePackage()">Yes, Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 </div>
             </div>
         </div>

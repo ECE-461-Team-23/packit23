@@ -1,9 +1,9 @@
 const packageData = { 
     id,
     packagename,
-    url,
+    // url,
     version,
-    author
+    // author
 }
 
 const packageRatings = {
@@ -17,10 +17,10 @@ const packageRatings = {
     netscore
 }
 
-const packageDownload = {
-    downloadId,
-    downloadLink
-}
+// const packageDownload = {
+//     downloadId,
+//     downloadLink
+// }
 
 var xhr = new XMLHttpRequest();
 // global variables
