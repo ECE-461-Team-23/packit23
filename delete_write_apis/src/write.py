@@ -106,8 +106,11 @@ async def package_create(request: Request) -> Union[None, Package]:
         parsed_body = helper.decode_body(payload)
 
         # On package upload, either Content or URL should be set.
-        assert ("Content" in parsed_body) or ("URL" in parsed_body) # At least one should be set
-        assert not ( ("Content" in parsed_body) and ("URL" in parsed_body) ) # Both shouldn't be set
+        contentSet = ("Content" in parsed_body) and parsed_body["Content"] != None
+        urlSet = ("URL" in parsed_body) and parsed_body["URL"] != None
+        helper.log("contentSet, urlSet: ", contentSet, urlSet)
+        assert contentSet or urlSet # At least one should be set
+        assert not ( contentSet and urlSet ) # Both shouldn't be set
     except Exception:
         helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid: {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly (e.g. Content and URL are both set), or the AuthenticationToken is invalid.")
@@ -147,13 +150,16 @@ async def package_create(request: Request) -> Union[None, Package]:
         rating = json.loads(responseBody)
         helper.log("rating: ", rating)
         netscore = rating["NET_SCORE"]
-        if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
-            helper.log(f"Package has a disqualifying rating: {rating}")
-            raise HTTPException(status_code=424, detail="Package is not uploaded due to the disqualified rating.")           
+ 
     except Exception:
         helper.log(f"Unable to get data from package_rater: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
     
+    # Check rating
+    if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
+        helper.log(f"Package has a disqualifying rating: {rating}")
+        raise HTTPException(status_code=424, detail="Package is not uploaded due to the disqualified rating.")          
+
     # Upload package
     helper.log("Uploading package...")
     try:

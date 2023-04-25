@@ -59,6 +59,11 @@ def zipit(source_dir, zip_name):
     zipitem(source_dir, zipf)
     zipf.close()
 
+def find_file(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
 def downloadGithubRepo(url: str):
     with tempfile.TemporaryDirectory() as dir:
         Repo.clone_from(url + ".git", dir)
@@ -85,7 +90,13 @@ def grabPackageDataFromZip(fileContents: str) -> tuple[str, str, str]:
 
     with tempfile.TemporaryDirectory() as dirPath:
         zf.extractall(dirPath)
-        with open(dirPath + "/package.json") as file:
+        log("Temporary directory location", dirPath)
+        log("Extracted contents", os.listdir(dirPath))
+        # Find package.json
+        packagePath = find_file("package.json", dirPath)
+        log("package.json location: ", packagePath)
+
+        with open(packagePath) as file:
             package_data = json.load(file)
             return package_data["name"], package_data["version"], package_data["homepage"]
             # helper.log(package_data["homepage"])
