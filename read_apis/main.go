@@ -146,26 +146,31 @@ func handle_package_id(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	for rows.Next() {
+	if rows.Next() {
 		err = rows.Scan(&meta.ID, &meta.Name, &meta.Version)
 		if err != nil {
 			fmt.Print(err)
 			return_500_packet(w, r)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - Package does not exist."))
+		return
 	}
 
-	res, err := db.Query("SELECT rating_pk FROM packages WHERE id = ?;", id)
+	// if above is successful, there should be at least one row
+	rows, err = db.Query("SELECT rating_pk FROM packages WHERE id = ?;", id)
 	if err != nil {
 		fmt.Print(err)
 		return_500_packet(w, r)
 		return
 	}
-	defer res.Close()
+	defer rows.Close()
 
 	// bucket object name is the same as the rating pk
-	for res.Next() {
-		err = res.Scan(&bucket_object_name)
+	for rows.Next() {
+		err = rows.Scan(&bucket_object_name)
 		if err != nil {
 			fmt.Print(err)
 			return_500_packet(w, r)
@@ -210,15 +215,15 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := db.Query("SELECT A.busFactor, A.correctness, A.rampUp, A.responsiveMaintainer, A.licenseScore, A.goodPinningPractice, A.pullRequest, A.netScore FROM ratings AS A INNER JOIN packages AS B ON A.id = B.rating_pk WHERE B.id = ?;", id)
+	rows, err := db.Query("SELECT A.busFactor, A.correctness, A.rampUp, A.responsiveMaintainer, A.licenseScore, A.goodPinningPractice, A.pullRequest, A.netScore FROM ratings AS A INNER JOIN packages AS B ON A.id = B.rating_pk WHERE B.id = ?;", id)
 	if err != nil {
 		fmt.Print(err)
 		return_400_packet(w, r)
 		return
 	}
 
-	if res.Next() {
-		err = res.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
+	if rows.Next() {
+		err = rows.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
 		if err != nil {
 			fmt.Print(err)
 			return_400_packet(w, r)
