@@ -85,16 +85,12 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 
 	// parse body for versions to find
 	var response_arr []PackageQuery
-	var body PackagesBody
 	var packages_metadata []PackageMetadata
-	err = json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&response_arr)
 	if err != nil {
 		fmt.Print("Error reading body of request")
 		return_404_packet(w, r)
 		return
-	}
-	for _, q := range body.Items {
-		response_arr = append(response_arr, PackageQuery{q.Name, q.Version})
 	}
 
 	if len(response_arr) == 1 && response_arr[0].Name == "*" {

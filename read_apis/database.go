@@ -41,7 +41,7 @@ func connect() (*sql.DB, error) {
 
 	var (
 		db_user                  = mustGetenv("DB_USER")
-		db_pass                  = mustGetenv("DB_PASSWORD")
+		db_pass                  = mustGetenv("DB_PASS")
 		db_name                  = mustGetenv("DB_NAME")
 		instance_connection_name = mustGetenv("INSTANCE_CONNECTION_NAME")
 		usePrivate               = os.Getenv("PRIVATE_IP")
