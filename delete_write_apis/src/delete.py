@@ -23,7 +23,8 @@ async def registry_reset(request: Request):
     # Parse request
     await helper.log_request(request)
     try:
-        token = request.headers["X-Authorization"]
+        token = helper.find_auth_token(request)
+        assert token != None
         userid = authentication.validate_jwt(token)
         assert userid != None
 
@@ -50,7 +51,8 @@ async def package_by_name_delete(name: str, request: Request):
     await helper.log_request(request)
     # Parse request
     try:
-        token = request.headers["X-Authorization"]
+        token = helper.find_auth_token(request)
+        assert token != None
         userid = authentication.validate_jwt(token)
         assert userid != None
     except Exception:
@@ -89,7 +91,8 @@ async def package_delete(id: str, request: Request):
     await helper.log_request(request)
     # Parse request
     try:
-        token = request.headers["X-Authorization"]
+        token = helper.find_auth_token(request)
+        assert token != None
         userid = authentication.validate_jwt(token)
         assert userid != None
         packageId = int(id)

@@ -98,7 +98,8 @@ async def package_create(request: Request) -> Union[None, Package]:
     await helper.log_request(request)
     # Parse request
     try:
-        token = request.headers["X-Authorization"]
+        token = helper.find_auth_token(request)
+        assert token != None
         userid = authentication.validate_jwt(token)
         assert userid != None
 
@@ -204,7 +205,8 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     await helper.log_request(request)
     # Parse request
     try:
-        token = request.headers["X-Authorization"]
+        token = helper.find_auth_token(request)
+        assert token != None
         userid = authentication.validate_jwt(token)
         assert userid != None
 
