@@ -11,16 +11,6 @@ from starlette_context import context
 from starlette_context.header_keys import HeaderKeys
 from fastapi import Request
 
-def find_auth_token(request: Request):
-    header = request.headers.get("X-Authorization") or request.headers.get("x-authorization") or request.headers.get("authorization")
-    if header.lower().startswith("bearer"):
-        _, token = header.split(" ")
-    else:
-        token = header
-    
-    log("Token found in header: ", token)
-    return token
-
 def decode_body(payload: bytes):
     # Try UTF-8. Otherwise, try unicode-escape
     try:
