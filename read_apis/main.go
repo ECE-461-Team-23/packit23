@@ -102,6 +102,7 @@ func handle_packages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if packages_metadata == nil {
+		// error code is already written
 		return
 	}
 
@@ -146,26 +147,31 @@ func handle_package_id(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	for rows.Next() {
+	if rows.Next() {
 		err = rows.Scan(&meta.ID, &meta.Name, &meta.Version)
 		if err != nil {
 			fmt.Print(err)
 			return_500_packet(w, r)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - Package does not exist."))
+		return
 	}
 
-	res, err := db.Query("SELECT rating_pk FROM packages WHERE id = ?;", id)
+	// if above is successful, there should be at least one row
+	rows, err = db.Query("SELECT rating_pk FROM packages WHERE id = ?;", id)
 	if err != nil {
 		fmt.Print(err)
 		return_500_packet(w, r)
 		return
 	}
-	defer res.Close()
+	defer rows.Close()
 
 	// bucket object name is the same as the rating pk
-	for res.Next() {
-		err = res.Scan(&bucket_object_name)
+	for rows.Next() {
+		err = rows.Scan(&bucket_object_name)
 		if err != nil {
 			fmt.Print(err)
 			return_500_packet(w, r)
@@ -200,6 +206,7 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return_500_packet(w, r)
 		return
 	}
+	defer db.Close()
 
 	var ratings PackageRating
 	vars := mux.Vars(r)
@@ -210,20 +217,25 @@ func handle_package_rate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := db.Query("SELECT A.busFactor, A.correctness, A.rampUp, A.responsiveMaintainer, A.licenseScore, A.goodPinningPractice, A.pullRequest, A.netScore FROM ratings AS A INNER JOIN packages AS B ON A.id = B.rating_pk WHERE B.id = ?;", id)
+	rows, err := db.Query("SELECT A.busFactor, A.correctness, A.rampUp, A.responsiveMaintainer, A.licenseScore, A.goodPinningPractice, A.pullRequest, A.netScore FROM ratings AS A INNER JOIN packages AS B ON A.id = B.rating_pk WHERE B.id = ?;", id)
 	if err != nil {
 		fmt.Print(err)
 		return_400_packet(w, r)
 		return
 	}
 
-	for res.Next() {
-		err = res.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
+	defer rows.Close()
+	if rows.Next() {
+		err = rows.Scan(&ratings.BusFactor, &ratings.Correctness, &ratings.RampUp, &ratings.ResponsiveMaintainer, &ratings.LicenseScore, &ratings.GoodPinningPractice, &ratings.PullRequest, &ratings.NetScore)
 		if err != nil {
 			fmt.Print(err)
 			return_400_packet(w, r)
 			return
 		}
+	} else {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - Package does not exist."))
+		return
 	}
 
 	json.NewEncoder(w).Encode(ratings)
@@ -288,6 +300,13 @@ func handle_package_byname(w http.ResponseWriter, r *http.Request) {
 		timevar = t.Format(time.RFC3339)
 		metadataList = append(metadataList, md)
 		times = append(times, timevar)
+	}
+
+	if len(metadataList) == 0 || len(times) == 0 {
+		fmt.Print("No such package.")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - No such package."))
+		return
 	}
 
 	// iterate through versions of package and get rest of history
@@ -365,8 +384,18 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 				return_500_packet(w, r)
 				return
 			}
-			listoflists = append(listoflists, mdl)
+			if len(mdl) != 0 {
+				listoflists = append(listoflists, mdl)
+			}
 		}
+	}
+
+	// check if no packages are found
+	if len(listoflists) == 0 {
+		fmt.Print("No package found under this regex.")
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("404 - No package found under this regex."))
+		return
 	}
 
 	for i, md_list := range listoflists {

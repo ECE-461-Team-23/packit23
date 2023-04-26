@@ -96,14 +96,18 @@ func getMetadataFromName(db *sql.DB, name string) ([]PackageMetadata, error) {
 	rows, err := db.Query("SELECT id, name, version FROM packages WHERE name = ?;", name)
 	if err != nil {
 		log.Print(err)
+		return nil, fmt.Errorf("error querying db. db.Query: %v", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var md PackageMetadata
 		if err := rows.Scan(&md.ID, &md.Name, &md.Version); err != nil {
-			return nil, fmt.Errorf("version of package not found. rows.Scan: %v", err)
+			return nil, fmt.Errorf("error creating metadata. rows.Scan: %v", err)
 		}
 		metadataList = append(metadataList, md)
+	}
+	if len(metadataList) == 0 {
+		return metadataList, nil
 	}
 	return metadataList, nil
 }
@@ -145,7 +149,7 @@ func get_paginated_packages_metadata(w http.ResponseWriter, r *http.Request, db 
 		metadataList, err := getMetadataFromName(db, response.Name)
 		if err != nil {
 			fmt.Print(err)
-			return_400_packet(w, r)
+			return_500_packet(w, r)
 			return nil
 		}
 		// check which version is in range
@@ -189,7 +193,7 @@ func get_all_packages_metadata(w http.ResponseWriter, r *http.Request, db *sql.D
 		metadataList, err := getMetadataFromName(db, response.Name)
 		if err != nil {
 			fmt.Print(err)
-			return_400_packet(w, r)
+			return_500_packet(w, r)
 			return nil
 		}
 		// check which version is in range
