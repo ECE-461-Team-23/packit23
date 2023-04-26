@@ -84,6 +84,7 @@ async def create_auth_token(request: Request):
     try:
         assert userid != None
         token = authentication.generate_jwt(userid)
+        token = "Bearer " + token
         helper.log("token: ", token)
         assert token != None
         return PlainTextResponse(token, status_code=200)
