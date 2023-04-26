@@ -1,9 +1,8 @@
-const endpointPackage = "https://write-apis-app-v2bzjldtvq-uc.a.run.app/package";
-const xAuth = "X-Authorization";
-let token;
+// const xAuth = "X-Authorization";
+// let token;
 
-function authenticate() {
-    // https://write-apis-app-v2bzjldtvq-uc.a.run.app/authenticate
-}
+// function authenticate() {
+    
+// }
 
-export { endpointPackage, xAuth, authenticate };
+// export { endpointPackage, xAuth, authenticate };

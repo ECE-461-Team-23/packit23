@@ -1,3 +1,4 @@
+const authenticateCall = "https://good-spec-d4rgapcc.uc.gateway.dev/authenticate";
 const packageData = { 
     id,
     packagename,
@@ -65,6 +66,11 @@ fetch('/package/:id', { // not 100% sure on this endpoint, might need more stuff
 function setupPage() {
     renderPackageInfo();
     renderRatingInfo();
+    authenticate();
+}
+
+function authenticate() {
+    
 }
 
 function renderPackageInfo() {
