@@ -255,6 +255,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Create an access token.
       operationId: CreateAuthToken
       consumes:
@@ -294,6 +295,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       operationId: PackageCreate
@@ -323,6 +325,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageByNameDelete
       parameters:
         - description: |-
@@ -348,6 +351,7 @@ paths:
       x-google-backend:
         address: ${read_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Return the history of this package (all versions).
       operationId: PackageByNameGet
       parameters:
@@ -410,6 +414,7 @@ paths:
       x-google-backend:
         address: ${read_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -443,6 +448,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageDelete
       parameters:
         - description: Package ID
@@ -464,6 +470,7 @@ paths:
       x-google-backend:
         address: ${read_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Return this package.
       operationId: PackageRetrieve
       parameters:
@@ -508,6 +515,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -549,6 +557,7 @@ paths:
       x-google-backend:
         address: ${read_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageRate
       parameters: []
       produces:
@@ -595,6 +604,7 @@ paths:
       x-google-backend:
         address: ${read_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -653,6 +663,7 @@ paths:
       x-google-backend:
         address: ${write_url}
         path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Reset the registry to a system default state.
       operationId: RegistryReset
       parameters: []
