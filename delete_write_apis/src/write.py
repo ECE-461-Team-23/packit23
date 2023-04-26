@@ -169,7 +169,7 @@ async def package_create(request: Request) -> Union[None, Package]:
     helper.log("Uploading package...")
     try:
         # Ingest external packages if required
-        if "Content" in parsed_body:
+        if ("Content" in parsed_body) and parsed_body["Content"] != None: 
             content = parsed_body["Content"]
             isExternal = False
         else:
@@ -221,8 +221,11 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         parsed_body = helper.decode_body(payload)
 
         # On package upload, either Content or URL should be set.
-        assert ("Content" in parsed_body["data"]) or ("URL" in parsed_body["data"]) # At least one should be set
-        assert not ( ("Content" in parsed_body["data"]) and ("URL" in parsed_body["data"]) ) # Both shouldn't be set
+        contentSet = ("Content" in parsed_body) and parsed_body["Content"] != None
+        urlSet = ("URL" in parsed_body) and parsed_body["URL"] != None
+        jsprogramSet = ("JSProgram" in parsed_body) and parsed_body["JSProgram"] != None
+        assert contentSet or urlSet or jsprogramSet # At least one should be set
+        assert not ( (contentSet and urlSet) or (contentSet and jsprogramSet) or (urlSet and jsprogramSet) ) # Only one should be set
     except Exception:
         helper.log(f"There is missing field(s) in the PackageData/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid: {traceback.format_exc()}")
         raise HTTPException(status_code=400, detail="There is missing field(s) in the PackageID/AuthenticationToken or it is formed improperly, or the AuthenticationToken is invalid.")
@@ -277,7 +280,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     helper.log("Update package...")
     try:
         # Ingest external packages if required
-        if "Content" in parsed_body:
+        if ("Content" in parsed_body) and parsed_body["Content"] != None: 
             content = parsed_body["Content"]
             isExternal = False
         else:
