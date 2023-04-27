@@ -1,4 +1,3 @@
-// resetBtn
 const deleteByIDCall = "https://good-spec-d4rgapcc.uc.gateway.dev/package/";
 const resetCall = "https://good-spec-d4rgapcc.uc.gateway.dev/reset";
 

@@ -1,31 +1,6 @@
 const authenticateCall = "https://good-spec-d4rgapcc.uc.gateway.dev/authenticate";
 const baseURL = "https://good-spec-d4rgapcc.uc.gateway.dev/";
-// const packageData = { 
-//     id,
-//     packagename,
-//     // url,
-//     version,
-//     // author
-// }
 
-// const packageRatings = {
-//     ratingid,
-//     busfactor,
-//     correctness,
-//     rampup,
-//     license,
-//     pinningpractice,
-//     pullrequest,
-//     netscore
-// }
-
-// const packageDownload = {
-//     downloadId,
-//     downloadLink
-// }
-
-// global variables
-{
 var IDSlotEl = document.getElementById("IDSlot");
 var NameSlotEl = document.getElementById("NameSlot");
 var URLSlotEl = document.getElementById("URLSlot");
@@ -43,25 +18,6 @@ var LicenseSlotEl = document.getElementById("LicenseSlot");
 var PPSlotEl = document.getElementById("PPSlot");
 var PRSlotEl = document.getElementById("PRSlot");
 var NetScoreSlotEl = document.getElementById("NetScoreSlot");
-}
-
-fetch('/package/:id', { // not 100% sure on this endpoint, might need more stuff
-    method: 'POST',
-    headers: {
-    'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(packageData)
-    })
-    .then(response => response.json())
-
-// fetch('/users', { // not 100% sure on this endpoint, might need more stuff
-//     method: 'POST',
-//     headers: {
-//     'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(data)
-//     })
-//     .then(response => response.json())
 
 function setupPage() {
     renderPackageInfo();
@@ -70,6 +26,15 @@ function setupPage() {
 }
 
 function renderPackageInfo() {
+    fetch('/package/:id', { // not 100% sure on this endpoint, might need more stuff
+        method: 'POST',
+        headers: {
+        'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(packageData)
+        })
+        .then(response => response.json())
+        
     // // HTML IDs: IDSlot, NameSlot, URLSlot, VersionSlot, AuthorSlot, DownloadSlot
     // IDSlotEl.value = packageData.id;
     // NameSlotEl.value = packageData.name;
@@ -134,14 +99,3 @@ async function deletePackage(id) {
     console.log(response);
     console.log("End of Package Deletion");
 }
-
-// ----------------
-// MODAL FUNCTIONS
-// ----------------
-
-// const packageModal = document.getElementById('packageEditModal')
-// const packageInput = document.getElementById('myInput')
-
-// myModal.addEventListener('shown.bs.modal', () => {
-//     myInput.focus()
-// })

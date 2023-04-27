@@ -1,15 +1,6 @@
-// import { endpointPackage, xAuth } from 'overarching.js';
 const uploadAPICall = "https://good-spec-d4rgapcc.uc.gateway.dev/package";
 const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg";
-// const packageData = {
-//     id,
-//     packagename,
-//     url,
-//     version,
-//     author,
-//     file,
-//     encodedFile
-// }
+
 const formPackageName = document.getElementById("formPackageName");
 const formVersionNo = document.getElementById("formVersionNo");
 const formZipUpload = document.getElementById("formZipUpload");
@@ -17,14 +8,6 @@ const formURL = document.getElementById("formURL");
 
 const errPermsMsg = document.getElementById("errPermsMsg");
 const errMsg = document.getElementById("errMsg");
-
-// var xhr = new XMLHttpRequest();
-// HTML IDs
-// formPackageName
-// formVersionNo
-// formZipUpload
-// formURL
-// formSubmit
 
 // async function submitPackagebyZip(author, encodedFile, name, versionNo, zip, url) {
 //     try {
@@ -67,18 +50,6 @@ async function submitPackageByURL(inputUrl) {
         })
     })
         .catch(error => console.log(error));
-
-    // const json = await response.json();
-    // response.json().then(data => {
-    //     console.log("Response Body: ", data);
-    //     console.log("Response Headers: ", response.headers);
-    // });
-    // console.log(json);
-    // console.log(body);
-    // console.log(data);
-
-    // const responseBody = await response.json();
-    // console.log(responseBody);
     console.log(response);
     console.log('end of submit by URL');
 }
@@ -119,10 +90,10 @@ function checkPackage() {
     console.log(formZipUpload.value);
 }
 
-// function encodeFile() {
+function encodeFile() {
 
-// }
+}
 
-// function getAuthor() {
+function getAuthor() {
 
-// }
+}
