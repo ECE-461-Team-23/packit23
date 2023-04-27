@@ -1,5 +1,6 @@
 const authenticateCall = "https://good-spec-d4rgapcc.uc.gateway.dev/authenticate";
 const baseURL = "https://good-spec-d4rgapcc.uc.gateway.dev/";
+const id = window.location.pathname.charAt(window.location.pathname.length - 1);
 
 var IDSlotEl = document.getElementById("IDSlot");
 var NameSlotEl = document.getElementById("NameSlot");
@@ -22,19 +23,18 @@ var NetScoreSlotEl = document.getElementById("NetScoreSlot");
 function setupPage() {
     renderPackageInfo();
     renderRatingInfo();
-    authenticate();
 }
 
 function renderPackageInfo() {
-    fetch('/package/:id', { // not 100% sure on this endpoint, might need more stuff
+    fetch('/package/' + id, { // not 100% sure on this endpoint, might need more stuff
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(packageData)
-        })
+    })
         .then(response => response.json())
-        
+
     // // HTML IDs: IDSlot, NameSlot, URLSlot, VersionSlot, AuthorSlot, DownloadSlot
     // IDSlotEl.value = packageData.id;
     // NameSlotEl.value = packageData.name;
@@ -61,16 +61,6 @@ function renderRatingInfo() {
     // NetScoreSlotEl.value = packageRatings.netscore;
 }
 
-function openEditModal() {
-    // // HTML IDs: packageEditModal
-    checkPerms();
-}
-
-function closeEditModal() {
-    // // HTML IDs: packageEditModal
-    setupPage();
-}
-
 function savePackage() {
     // // HTML IDs: IDSlotModal, NameSlotModal, URLSlotModal, VersionSlotModal, AuthorSlotModal
     // // HTML IDs: packageSaveModal
@@ -81,7 +71,17 @@ function savePackage() {
     // AuthorSlotEl.value
 }
 
-async function deletePackage(id) {
+function checkPackage() {
+    let valid = 0;
+    //     IDSlotModal
+    //     NameSlotModal
+    //     VersionSlotModal
+    if (valid) {
+        savePackage();
+    }
+}
+
+async function deletePackage() {
     // HTML IDs: packageSaveModal, packageDeleteModal
     const response = await fetch(baseURL.concat("package/", id), {
         method: 'DELETE',

@@ -8,7 +8,7 @@ footerTemplate.innerHTML = `
     <div class="container">
         <footer class="py-5">
         <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
-            <p>© 2022 ECE 461 Team 23. All rights reserved.</p>
+            <p>© 2023 ECE 461 Team 23. All rights reserved.</p>
             <ul class="list-unstyled d-flex">
             <li class="ms-3"><a class="link-dark" href="https://github.com/packit461"><i class="bi bi-github" style="font-size: 2rem; color:darkgray"></i></a></li>
             </ul>

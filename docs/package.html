@@ -75,8 +75,8 @@
                         <input type="text" class="form-control mb-3" id="AuthorSlot" placeholder="Author not found"
                             disabled> -->
                     </div>
-                    <i class="bi bi-download"> &nbsp;</i><a id="DownloadSlot" href="path/to/your/file.pdf"
-                        download>Download Files</a>
+                    <i class="bi bi-download"> &nbsp;</i><a id="DownloadSlot" href=""
+                        onclick="downloadPackage()" download>Download Files</a>
                     <br>
                     <hr>
                     <div class="mb-3">
@@ -143,9 +143,9 @@
             </div>
             <div class="modal-footer">
                 <div>
-                    <button id="packageSaveModal" class="btn btn-primary" onclick="savePackage()">Save</button>
-                    <!-- <button id="packageDeleteModal" class="btn btn-outline-primary"
-                        onclick="deletePackage()">Delete</button> -->
+                    <button id="packageSaveModal" class="btn btn-primary" onclick="checkPackage()">Save</button>
+                    <button id="packageDeleteModal" class="btn btn-outline-primary"
+                        onclick="deletePackage()">Delete</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
