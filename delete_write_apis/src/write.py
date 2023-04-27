@@ -53,7 +53,7 @@ async def write_root(request: Request):
     # header and caches preflight response for an 3600s
     headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
+        'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE'],
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Max-Age': '3600'
     }
