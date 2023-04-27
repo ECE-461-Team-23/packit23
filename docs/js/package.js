@@ -1,29 +1,29 @@
 const authenticateCall = "https://good-spec-d4rgapcc.uc.gateway.dev/authenticate";
-const packageData = { 
-    id,
-    packagename,
-    // url,
-    version,
-    // author
-}
+const baseURL = "https://good-spec-d4rgapcc.uc.gateway.dev/";
+// const packageData = { 
+//     id,
+//     packagename,
+//     // url,
+//     version,
+//     // author
+// }
 
-const packageRatings = {
-    ratingid,
-    busfactor,
-    correctness,
-    rampup,
-    license,
-    pinningpractice,
-    pullrequest,
-    netscore
-}
+// const packageRatings = {
+//     ratingid,
+//     busfactor,
+//     correctness,
+//     rampup,
+//     license,
+//     pinningpractice,
+//     pullrequest,
+//     netscore
+// }
 
 // const packageDownload = {
 //     downloadId,
 //     downloadLink
 // }
 
-var xhr = new XMLHttpRequest();
 // global variables
 {
 var IDSlotEl = document.getElementById("IDSlot");
@@ -67,10 +67,6 @@ function setupPage() {
     renderPackageInfo();
     renderRatingInfo();
     authenticate();
-}
-
-function authenticate() {
-    
 }
 
 function renderPackageInfo() {
@@ -120,20 +116,24 @@ function savePackage() {
     // AuthorSlotEl.value
 }
 
-function deletePackage() {
+async function deletePackage(id) {
     // HTML IDs: packageSaveModal, packageDeleteModal
-    xhr.open("DELETE", "/package/:id", true);
-    xhr.setRequestHeader("Content-type", "application/json");
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4 && xhr.status == 200) { // status codes arent right yet
-        // Handle success response
-        } else {
-        // Handle error response
+    const response = await fetch(baseURL.concat("package/", id), {
+        method: 'DELETE',
+        headers: {
+            'Access-Control-Request-Method': 'DELETE',
+            'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
+        },
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
         }
-    }
+        console.log(response)
+        console.log('Resource deleted successfully');
+    }).catch(error => console.log(error));
+    console.log(response);
+    console.log("End of Package Deletion");
 }
-
-
 
 // ----------------
 // MODAL FUNCTIONS

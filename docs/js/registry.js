@@ -42,6 +42,16 @@ function openEntry(id) {
     window.open(url, '_blank');
 }
 
-function searchRegistry() {
+
+//filterName filterID filterRegEx
+function searchRegistryByName() {
+    // filterName.
+}
+
+function searchRegistryByID() {
+
+}
+
+function searchRegistryByRegex() {
 
 }

@@ -54,16 +54,32 @@ async function submitPackageByURL(inputUrl) {
         mode: 'no-cors',
         method: 'POST',
         headers: {
-            'X-Authorization': token,
-            'Content-Type': 'application/json'
+            'Content-Type': "application/json",
+            'Accept': "*/*",
+            'Accept-Encoding': "gzip, deflate, br",
+            'Connection': "keep-alive",
+            'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
         },
         body: JSON.stringify({
+            // "Content": "",
             'URL': inputUrl
+            // ,"JSProgram": ""
         })
     })
-    .catch(error => console.log(error));
+        .catch(error => console.log(error));
+
     // const json = await response.json();
+    // response.json().then(data => {
+    //     console.log("Response Body: ", data);
+    //     console.log("Response Headers: ", response.headers);
+    // });
     // console.log(json);
+    // console.log(body);
+    // console.log(data);
+
+    // const responseBody = await response.json();
+    // console.log(responseBody);
+    console.log(response);
     console.log('end of submit by URL');
 }
 
@@ -72,7 +88,7 @@ function checkURLSubmission() {
         console.log("empty URL upload");
         errURLMsg.style.display = "block";
     } else {
-        submitPackageByURL(formURL.value); 
+        submitPackageByURL(formURL.value);
     }
 }
 
@@ -92,8 +108,8 @@ function checkPackage() {
     //     console.log("empty zip upload");
     // } 
     if (formURL.value != "") {
-        submitPackageByURL(formURL.value); 
-    } else if (formZipUpload.value != "" ) {
+        submitPackageByURL(formURL.value);
+    } else if (formZipUpload.value != "") {
         // submitPackageByZip();
     } else {
         console.log("empty upload");
