@@ -33,7 +33,11 @@ func print_req_info(r *http.Request) {
 func verifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header["X-Authorization"] != nil {
-			token, err := jwt.Parse(r.Header["X-Authorization"][0], func(token *jwt.Token) (interface{}, error) {
+			var tk string = r.Header["X-Authorization"][0]
+			if strings.Contains(tk, "Bearer ") {
+				tk = strings.Split(tk, " ")[1]
+			}
+			token, err := jwt.Parse(tk, func(token *jwt.Token) (interface{}, error) {
 				_, ok := token.Method.(*jwt.SigningMethodHMAC)
 				if !ok {
 					fmt.Print("Error validating JWT")
@@ -352,7 +356,7 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// for list of names that match regex, get metadata and append to list of metadata
-	rows, err := db.Query("SELECT id, name, version FROM packages WHERE name REGEXP ?;", body.RegEx)
+	rows, err := db.Query("SELECT id, name, version FROM packages WHERE name REGEXP \"?\";", body.RegEx)
 	if err != nil {
 		fmt.Print(err)
 		return_500_packet(w, r)
