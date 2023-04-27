@@ -34,13 +34,14 @@ const errMsg = document.getElementById("errMsg");
 *********************************************************************************/
 async function submitPackageByURL(inputUrl) {
     const response = await fetch(uploadAPICall, {
-        mode: 'no-cors',
+        // mode: 'no-cors',
         method: 'POST',
         headers: {
-            'Content-Type': "application/json",
-            'Accept': "*/*",
-            'Accept-Encoding': "gzip, deflate, br",
-            'Connection': "keep-alive",
+            // 'Content-Type': "application/json",
+            // 'Accept': "*/*",
+            // 'Accept-Encoding': "gzip, deflate, br",
+            // 'Connection': "keep-alive",
+            'Fuck' : "6969696",
             'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
         },
         body: JSON.stringify({
@@ -48,8 +49,7 @@ async function submitPackageByURL(inputUrl) {
             'URL': inputUrl
             // ,"JSProgram": ""
         })
-    })
-        .catch(error => console.log(error));
+    }).catch(error => console.log(error));
     console.log(response);
     console.log('end of submit by URL');
 }

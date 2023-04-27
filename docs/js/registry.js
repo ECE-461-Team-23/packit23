@@ -1,57 +1,61 @@
+const getPackagesCall = "https://good-spec-d4rgapcc.uc.gateway.dev/packages";
+const filterRegExInput = document.getElementById("filterRegExInput");
+const filterIDInput = document.getElementById("filterIDInput");
+const filterNameInput = document.getElementById("filterNameInput");
+
 // should be called by body in respective page as an onload
 function setupPage() {
-    renderTable();
+    renderTable(getRegistry());
 }
 
 // Populate RegistryTable
 // This should use /packages endpoint
-function renderTable() {
-    $.ajax({
-        'url': "/packages", // the go server URL I think? or /registry.html im not sure
-        'method': "POST",
-        'contentType': 'application/json'
-    }).done( function(data) {
-        $('#registryTable').dataTable( {
-            "aaData": data,
-            "columns": [
-                { "data": "ID"},
-                { 
-                    "data": "Name", 
-                    "render": function(data, type, row, meta) {
-                        return '<a href="#" onclick="openEntry(' + data + ')">' + data + '</a>';
-                    } 
-                },
-                { "data": "Version" },
-            ]
-        })
-    })
-        
-    // "<i href=openEntry(" Data.ID") class='bi bi-folder2-open'> </i>"
-    
-    // button onClick=""
-    // onRowClick("my-table-id", function (row){
-    //     var value = row.getElementsByTagName("td")[0].innerHTML;
-    //     document.getElementById('click-response').innerHTML = value + " clicked!";
-    //     console.log("value>>", value);
-    // });
+function renderTable(data) {
+    $('#registryTable').dataTable( {
+        "aaData": data,
+        "columns": [
+            { "data": "ID"},
+            { 
+                "data": "Name", 
+                "render": function(data, type, row, meta) {
+                    return '<a href="#" onclick="openPackage(' + data.ID + ')">' + data.Name + '</a>';
+                } 
+            },
+            { "data": "Version" },
+        ]
+    });
 }
 
-function openEntry(id) {
+function openPackage(id) {
     // get by package by ID and open 
-    var url = '/packages/' + id; // Replace with the URL for your package details page
+    var url = 'package.html/package/' + id; // Replace with the URL for your package details page
     window.open(url, '_blank');
 }
 
-
-//filterName filterID filterRegEx
-function searchRegistryByName() {
-    // filterName.
+async function getRegistry() {
+    const response = await fetch(getPackagesCall, {
+        method: 'POST',
+        headers: {
+            'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
+        }
+    }).catch(error => console.log(error));
+    console.log(response);
+    console.log('end of submit by URL');
+    return response;
 }
 
-function searchRegistryByID() {
-
+async function searchRegistryByRegex() {
+    // filterRegExInput.value;
+    // Add Fetch blocks here to return reponse. 
+    // renderTable(response);
 }
 
-function searchRegistryByRegex() {
+async function searchRegistryByID() {
+    // filterIDInput.value;
+    // renderTable(response);
+}
 
+async function searchRegistryByName() {
+    // filterName.value;
+    // renderTable(response);
 }

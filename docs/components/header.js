@@ -23,7 +23,7 @@ headerTemplate.innerHTML = `
                     <a class="nav-link" href="manage.html">Management</a>
                     </li>
                     <li class="nav-item">
-                    <a class="nav-link" href="404lol">404</a>
+                    <a class="nav-link" href="404.html">404</a>
                     </li>
                 </ul>
                 <div>
