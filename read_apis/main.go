@@ -24,6 +24,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func print_req_info(r *http.Request) {
@@ -460,7 +461,8 @@ func handleRequests() {
 	router.HandleFunc("/package/{id}/rate", verifyJWT(handle_package_rate))
 	router.HandleFunc("/package/byName/{name}", verifyJWT(handle_package_byname))
 	router.HandleFunc("/package/byRegEx", verifyJWT(handle_package_byregex))
-	log.Fatal(http.ListenAndServe(":8080", router))
+	cors_handler := cors.Default().Handler(router)
+	log.Fatal(http.ListenAndServe(":8080", cors_handler))
 }
 
 func main() {
