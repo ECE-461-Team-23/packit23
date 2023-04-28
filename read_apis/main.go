@@ -465,7 +465,7 @@ func handleRequests() {
 		AllowedOrigins:   []string{"https://growyourgrove.tech", "https://www.growyourgrove.tech"},
 		AllowCredentials: true,
 		AllowedMethods:   []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"*"},
+		AllowedHeaders:   []string{"*", "X-Authorization"},
 		// Enable Debugging for testing, consider disabling in production
 		Debug: true,
 	})
