@@ -221,9 +221,10 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
         parsed_body = helper.decode_body(payload)
 
         # On package upload, either Content or URL should be set.
-        contentSet = ("Content" in parsed_body) and parsed_body["Content"] != None
-        urlSet = ("URL" in parsed_body) and parsed_body["URL"] != None
-        jsprogramSet = ("JSProgram" in parsed_body) and parsed_body["JSProgram"] != None
+        contentSet = ("Content" in parsed_body["data"]) and parsed_body["data"]["Content"] != None
+        urlSet = ("URL" in parsed_body["data"]) and parsed_body["data"]["URL"] != None
+        jsprogramSet = ("JSProgram" in parsed_body["data"]) and parsed_body["data"]["JSProgram"] != None
+        helper.log("contentSet, urlSet, jsprogramSet: ", contentSet, urlSet, jsprogramSet)
         assert contentSet or urlSet or jsprogramSet # At least one should be set
         assert not ( (contentSet and urlSet) or (contentSet and jsprogramSet) or (urlSet and jsprogramSet) ) # Only one should be set
     except Exception:
@@ -234,7 +235,7 @@ async def package_update(id: str, request: Request) -> Union[None, Package]:
     helper.log(f"HTTP Request body: {parsed_body}")
     try:
         packageName, packageVersion, packageId = parsed_body["metadata"]["Name"], parsed_body["metadata"]["Version"], parsed_body["metadata"]["ID"]
-        helper.log("packageName, packageVersion, packageUrl: ", packageName, packageVersion, packageUrl)
+        helper.log("packageName, packageVersion, packageUrl: ", packageName, packageVersion, packageId)
         packageId = int(packageId)
         _, _, packageUrl = helper.grabPackageDataFromRequest(parsed_body["data"]) # Ignore data from package.json, use metadata given
         helper.log("packageId, packageUrl", packageId, packageUrl)

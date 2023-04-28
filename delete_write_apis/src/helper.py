@@ -83,6 +83,12 @@ def checkGithubUrl(url: str) -> bool:
         return True
     return False
 
+def cleanUrl(url: str) -> bool:
+    # Remove query parameters and anchors from URL
+    o = urlparse(url)
+    url_without_query_string = o.scheme + "://" + o.netloc + o.path
+    return url_without_query_string
+
 def grabPackageDataFromZip(fileContents: str) -> tuple[str, str, str]:
     # Returns the URL from package.json inside of a base64 encoded zip file
     zip_buffer = io.BytesIO(base64.b64decode(fileContents))
@@ -144,3 +150,5 @@ def grabPackageDataFromRequest(parsed_body):
 # with open("/Users/ben/code/packit23/delete_write_apis/tests/example_b64.txt", "r") as file:
 #     x = grabUrl(file.read())
 #     helper.log(x)
+
+print(grabPackageDataFromRequest({"URL": "https://github.com/text-mask/text-mask"}))
