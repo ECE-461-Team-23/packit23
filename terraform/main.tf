@@ -134,6 +134,13 @@ resource "google_cloud_run_service" "package_rater_run_service" {
           name = "LOG_LEVEL"
           value = "2"
         }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
+          }
+        }
       }
 
       timeout_seconds = 90
@@ -215,7 +222,15 @@ resource "google_cloud_run_service" "read_apis_run_service" {
             }
           }
         }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
+          }
+        }
       }
+
 
       timeout_seconds = 300
       container_concurrency = 1
@@ -314,6 +329,13 @@ resource "google_cloud_run_service" "write_apis_run_service" {
               name = "USER_LOGINS"
               key  = "latest"
             }
+          }
+        }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
           }
         }
       }
