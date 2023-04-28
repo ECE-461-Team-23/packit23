@@ -160,10 +160,10 @@ async def package_create(request: Request) -> Union[None, Package]:
         helper.log(f"Unable to get data from package_rater: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Internal server error")
     
-    # Check rating
-    if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
-        helper.log(f"Package has a disqualifying rating: {rating}")
-        raise HTTPException(status_code=424, detail="Package is not uploaded due to the disqualified rating.")          
+    # # Check rating
+    # if netscore < MINIMUM_ACCEPTABLE_NET_SCORE:
+    #     helper.log(f"Package has a disqualifying rating: {rating}")
+    #     raise HTTPException(status_code=424, detail="Package is not uploaded due to the disqualified rating.")          
 
     # Upload package
     helper.log("Uploading package...")

@@ -236,7 +236,6 @@ definitions:
     required:
       - password
     type: object
-host: package-registry-461.appspot.com
 info:
   contact:
     email: davisjam@purdue.edu
@@ -698,3 +697,7 @@ securityDefinitions:
     type: apiKey
 swagger: '2.0'
 x-components: {}
+host: "finalapi-333itlr63cw6n.apigateway.packit23-test3.cloud.goog"
+x-google-endpoints:
+- name: "finalapi-333itlr63cw6n.apigateway.packit23-test3.cloud.goog"
+  allowCors: True
