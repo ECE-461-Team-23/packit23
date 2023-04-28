@@ -25,6 +25,7 @@ type Repository struct {
 	ResponsivenessScore       float64 `json:"responsivenessScore"`
 	LicenseCompatibilityScore float64 `json:"licenseCompatibilityScore"`
 	VersionScore              float64 `json:"versionScore"`
+	CodeReviewScore           float64 `json:"codeReviewScore"`
 	NetScore                  float64 `json:"netScore"`
 	NetPercentage             float64 `json:"netPercentage"`
 }
@@ -38,6 +39,7 @@ type Package struct {
 	ResponsivenessScore       float64 `json:"RESPONSIVENESS_MAINTAINER_SCORE"`
 	LicenseCompatibilityScore float64 `json:"LICENSE_SCORE"`
 	VersionScore              float64 `json:"VERSION_SCORE"`
+	CodeReviewScore           float64 `json:"CODE_REVIEW_SCORE"`
 }
 
 func NewRepository() *Repository { // Initialize empty *Repository object
@@ -74,6 +76,7 @@ func ShowResults(repos []*Repository) {
 			ResponsivenessScore:       float64(int(repo.ResponsivenessScore*100)) / 100,
 			LicenseCompatibilityScore: float64(int(repo.LicenseCompatibilityScore*100)) / 100,
 			VersionScore:              float64(int(repo.VersionScore*100)) / 100,
+			CodeReviewScore:           float64(int(repo.CodeReviewScore*100)) / 100,
 		}
 
 		data = append(data, m)
@@ -89,7 +92,7 @@ func ShowResults(repos []*Repository) {
 	}
 }
 
-func ReturnResult(repo *Repository) (string) {
+func ReturnResult(repo *Repository) string {
 	data := Package{
 		Url:                       repo.Url,
 		NetPercentage:             float64(int(repo.NetPercentage)) / 100,
@@ -99,6 +102,7 @@ func ReturnResult(repo *Repository) (string) {
 		ResponsivenessScore:       float64(int(repo.ResponsivenessScore*100)) / 100,
 		LicenseCompatibilityScore: float64(int(repo.LicenseCompatibilityScore*100)) / 100,
 		VersionScore:              float64(int(repo.VersionScore*100)) / 100,
+		CodeReviewScore:           float64(int(repo.CodeReviewScore*100)) / 100,
 	}
 
 	b, err := json.Marshal(data)

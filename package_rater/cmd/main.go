@@ -3,22 +3,21 @@ package main
 import (
 	"fmt"
 	"io"
-	"os"
 	"net/http"
+	"os"
 
 	"go.uber.org/zap"
 
+	"github.com/packit461/packit23/package_rater/github_apis"
 	"github.com/packit461/packit23/package_rater/internal/cli"
 	"github.com/packit461/packit23/package_rater/internal/config"
 	"github.com/packit461/packit23/package_rater/internal/error"
 	"github.com/packit461/packit23/package_rater/internal/logger"
-	"github.com/packit461/packit23/package_rater/github_apis"
 )
 
-
 func return_error_packet(w http.ResponseWriter, r *http.Request) {
-    w.WriteHeader(http.StatusInternalServerError)
-    w.Write([]byte("500 - Internal error"))
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Write([]byte("500 - Internal error"))
 }
 
 // Handle a request
@@ -26,9 +25,9 @@ func handle_request(w http.ResponseWriter, r *http.Request, logger *zap.Logger) 
 	// Log request
 	logger.Info(fmt.Sprintf("Received %s request", r.Method))
 	headers := "Headers:\n"
-    for key, value := range r.Header {
-        headers += fmt.Sprintf("%s=%s\n", key, value)
-    }
+	for key, value := range r.Header {
+		headers += fmt.Sprintf("%s=%s\n", key, value)
+	}
 	logger.Info(headers)
 
 	body, err := io.ReadAll(r.Body)

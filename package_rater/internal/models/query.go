@@ -14,14 +14,6 @@ var Stars struct { // graphql query structure to get stargazers count of a repos
 	} `graphql:"repository(owner: $owner, name: $name)"` // passing in owner and name for the repository to look for
 }
 
-var DependencyCheck struct {
-	Repository struct {
-		DependencyGraphManifests struct {
-			ExceedsMaxSize bool `json:"exceedsMaxSize"`
-		}
-	} `graphql:"repository(owner: $owner, name: $name)"`
-}
-
 var Dependency struct {
 	Repository struct {
 		DependencyGraphManifests struct {

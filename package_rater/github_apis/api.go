@@ -42,6 +42,10 @@ func SendRequests(client *github.Client, graphqlClient *githubv4.Client, ctx con
 	if flag == 1 {
 		return flag
 	}
+	GetCodeReview(client, ctx, repo, logger, cache)
+	if flag == 1 {
+		return flag
+	}
 	GetPullRequests(client, ctx, repo, logger, cache)
 	if flag == 1 {
 		return flag
@@ -55,6 +59,10 @@ func SendRequests(client *github.Client, graphqlClient *githubv4.Client, ctx con
 		return flag
 	}
 	GetCommits(client, ctx, repo, logger, cache)
+	if flag == 1 {
+		return flag
+	}
+	GetDependencyQuery(graphqlClient, ctx, repo, logger, cache)
 	if flag == 1 {
 		return flag
 	}
@@ -124,6 +132,29 @@ func CreateGQLClient() (*githubv4.Client, context.Context) { // function to crea
 	return graphqlClient, ctx // returns the github graphql api client and the empty context
 }
 
+func GetCodeReview(client *github.Client, ctx context.Context, repo *models.Repository, logger *zap.Logger, c *cache.Cache) {
+	s1 := fmt.Sprintf("org:%s repo:%s is:pr is:closed reason:completed", repo.Owner, repo.Name)
+	prs, response1, err1 := client.Search.Issues(ctx, s1, &github.SearchOptions{})
+	s2 := fmt.Sprintf("org:%s repo:%s is:pr is:closed reason:completed comments:1", repo.Owner, repo.Name)
+	crs, response2, err2 := client.Search.Issues(ctx, s2, &github.SearchOptions{})
+	if err1 != nil || err2 != nil {
+		flag = 1
+		newError := error.NewRequestError("REST", err1.Error(), response1.StatusCode)
+		fmt.Println(newError.Error())
+		logger.Info(newError.Error())
+		return
+	}
+	logger.Debug(fmt.Sprintf("Get Pull Request: %s", response1.Status))
+	logger.Debug(fmt.Sprintf("Get PRs with code reviews: %s", response2.Status))
+
+	// logger.Info(fmt.Sprintf("Get Pull Request: %d", *prs.Total))
+	// logger.Info(fmt.Sprintf("Get PRs with code reviews: %d", *crs.Total))
+
+	repo.CodeReviewScore = float64(*crs.Total) / float64(*prs.Total)
+	// logger.Info(fmt.Sprintf("Get CodeReviewScore: %f", repo.CodeReviewScore))
+
+}
+
 func GetPullRequests(client *github.Client, ctx context.Context, repo *models.Repository, logger *zap.Logger, c *cache.Cache) { // function to make get request for pull requests
 	cachedResp, found := c.Get(fmt.Sprintf("%s-prs", repo.Url))
 	if found {
@@ -143,6 +174,7 @@ func GetPullRequests(client *github.Client, ctx context.Context, repo *models.Re
 	}
 	c.Set(fmt.Sprintf("%s-prs", repo.Url), *prs.Total, cache.DefaultExpiration)
 	logger.Debug(fmt.Sprintf("Get Pull Request: %s", response.Status))
+	// logger.Info(fmt.Sprintf("Get Pull Request: %t", *prs.Total))
 	repo.OpenPRs = *prs.Total // populate reposigotory field
 
 }
@@ -196,10 +228,10 @@ func GetDependencyQuery(client *githubv4.Client, ctx context.Context, repo *mode
 	}
 
 	logger.Info(fmt.Sprintf("Dependency count: %d", repo.DependencyCount))
-	// // logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
-	// // logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
+	// logger.Info(fmt.Sprintf("Version score: %f", repo.VersionScore))
+	// logger.Info(fmt.Sprintf("numNodes: %d", numNodes))
 
-	// // logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
+	// logger.Info(fmt.Sprintf("%+v\n", models.Dependency.Repository))
 
 }
 
