@@ -13,7 +13,8 @@ from contextlib import asynccontextmanager
 from . import write, delete, database
 
 origins = [
-    "https://growyourgrove.tech"
+    "https://growyourgrove.tech",
+    "https://www.growyourgrove.tech"
 ]
 
 # Add middleware to access requestid using "context.data"
