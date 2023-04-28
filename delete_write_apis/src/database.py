@@ -155,8 +155,9 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
             rampUp=rating.get("RAMP_UP_SCORE") or 0,
             responsiveMaintainer=rating.get("RESPONSIVENESS_MAINTAINER_SCORE") or 0,
             licenseScore=rating.get("LICENSE_SCORE") or 0,
-            goodPinningPractice=rating.get("VERSION_SCORE") or 0,
-            pullRequest=rating.get("CODE_REVIEW_SCORE") or 0,
+            goodPinningPractice=0, #rating["GOOD_PINNING_PRACTICE_SCORE"], #TODO:
+            pullRequest=0, #rating["PULL_REQUEST"], TODO:
+            # VERSION_SCORE?
             netScore=rating.get("NET_SCORE") or 0
         )
         result = conn.execute(ins)
