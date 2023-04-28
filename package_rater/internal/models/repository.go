@@ -52,6 +52,8 @@ var Weights = map[string]float64{
 	"Bus Factor":            3.0,
 	"Responsiveness":        2.0,
 	"License Compatibility": 2.0,
+	"Version Pinning":       1.0,
+	"Code Reviews":          1.0,
 }
 
 func SortRepositories(repos []*Repository) []*Repository {
