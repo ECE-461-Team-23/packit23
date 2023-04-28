@@ -171,43 +171,29 @@ func get_paginated_packages_metadata(w http.ResponseWriter, r *http.Request, db 
 func get_all_packages_metadata(w http.ResponseWriter, r *http.Request, db *sql.DB, response_arr []PackageQuery) []PackageMetadata {
 	var max_returned_packages int = 50
 	var packages_metadata []PackageMetadata
-	for i, response := range response_arr {
-		if i >= max_returned_packages {
+
+	rows, err := db.Query("SELECT id, name, version FROM packages WHERE name REGEXP \".*\";")
+	if err != nil {
+		fmt.Print(err)
+		return_500_packet(w, r)
+		return nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var md PackageMetadata
+		if len(packages_metadata) >= max_returned_packages {
 			fmt.Print("Too many packages to query")
 			return_413_packet(w, r)
 			return nil
 		}
-		// check if response version field contains '-' character without surrounding whitespace, if it doesn't add it
-		char_idx := strings.Index(response.Version, "-")
-		if strings.Contains(response.Version, "-") && response.Version[char_idx-1] != ' ' && response.Version[char_idx+1] != ' ' {
-			response.Version = strings.Replace(response.Version, "-", " - ", -1)
-		}
-		c, err := semver.NewConstraint(response.Version)
-		if err != nil {
-			fmt.Print(err)
-			return_400_packet(w, r)
-			return nil
-		}
 
-		// query all versions of a package if found in db
-		metadataList, err := getMetadataFromName(db, response.Name)
-		if err != nil {
-			fmt.Print(err)
+		if err := rows.Scan(&md.ID, &md.Name, &md.Version); err != nil {
 			return_500_packet(w, r)
 			return nil
 		}
-		// check which version is in range
-		for _, md := range metadataList {
-			v, err := semver.NewVersion(md.Version)
-			if err != nil {
-				fmt.Print(err)
-				return_500_packet(w, r)
-				return nil
-			}
-			if c.Check(v) {
-				packages_metadata = append(packages_metadata, md)
-			}
-		}
+		packages_metadata = append(packages_metadata, md)
 	}
+
 	return packages_metadata
 }
