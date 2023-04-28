@@ -2,6 +2,7 @@ from typing import Union
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import PlainTextResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from starlette.middleware import Middleware
 from starlette_context import context, plugins
@@ -10,6 +11,10 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 
 from . import write, delete, database
+
+origins = [
+    "https://growyourgrove.tech"
+]
 
 # Add middleware to access requestid using "context.data"
 middleware = [
@@ -30,7 +35,13 @@ async def lifespan(app: FastAPI):
     # Cleanup
 
 app = FastAPI(middleware=middleware, lifespan=lifespan)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(delete.router)
 app.include_router(write.router)
 

@@ -45,21 +45,6 @@ async def write_root(request: Request):
     await helper.log_request(request)
     return {"Hello": "Write"}
 
-@router.options("/cors")
-async def write_root(request: Request):
-    await helper.log_request(request)
-
-    # Allows GET requests from any origin with the Content-Type
-    # header and caches preflight response for an 3600s
-    headers = {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': ['GET', 'POST', 'PUT', 'DELETE'],
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '3600'
-    }
-
-    return PlainTextResponse('', 200, headers)
-
 @router.put('/authenticate')
 async def create_auth_token(request: Request):
     await helper.log_request(request)
