@@ -7,6 +7,44 @@ import tempfile
 import zipfile
 from git import Repo
 from urllib.parse import urlparse
+from starlette_context import context
+from starlette_context.header_keys import HeaderKeys
+from fastapi import Request
+
+def decode_body(payload: bytes):
+    # Try UTF-8. Otherwise, try unicode-escape
+    try:
+        payloadDecoded = payload.decode("UTF-8")
+        log("(UTF-8) payloadDecoded: ", payloadDecoded)
+        parsed_body = json.loads(payloadDecoded, strict=False)
+        log("UTF-8) parsed_body: ", parsed_body)
+        return parsed_body
+    except Exception:
+        log("UTF-8 parsing failed")
+        payloadDecoded = payload.decode("unicode-escape")
+        log("(unicode-escape) payloadDecoded: ", payloadDecoded)
+        parsed_body = json.loads(payloadDecoded, strict=False)
+        log("(unicode-escape) parsed_body: ", parsed_body)
+        return parsed_body
+
+async def log_request(request: Request):
+    statements = ["|Method:", request.method,
+                  "|URL:", request.url,
+                  "|Headers:", request.headers,
+                  "|Query params:", request.query_params,
+                  "|Path params:", request.path_params,
+                  "|Client:", request.client,
+                  "|Body:", await request.body()
+    ]
+    log(*statements)
+
+def log(*args, **kwargs):
+    # Same a print, but attach the request id beforehand
+    if context.exists():
+        header = f"[{context.data.get(HeaderKeys.request_id)}]"
+    else:
+        header = f"[Container-Startup]"
+    print(*((header,) + args), **kwargs)
 
 def zipitem(path, ziph):
     # ziph is zipfile handle
@@ -21,6 +59,11 @@ def zipit(source_dir, zip_name):
     zipitem(source_dir, zipf)
     zipf.close()
 
+def find_file(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
 def downloadGithubRepo(url: str):
     with tempfile.TemporaryDirectory() as dir:
         Repo.clone_from(url + ".git", dir)
@@ -34,10 +77,17 @@ def downloadGithubRepo(url: str):
             return base64.b64encode(b)
 
 def checkGithubUrl(url: str) -> bool:
+    log(f"checkGithubUrl: {url}")
     parsed_uri = urlparse(url)
     if parsed_uri.netloc == "github.com":
         return True
     return False
+
+def cleanUrl(url: str) -> bool:
+    # Remove query parameters and anchors from URL
+    o = urlparse(url)
+    url_without_query_string = o.scheme + "://" + o.netloc + o.path
+    return url_without_query_string
 
 def grabPackageDataFromZip(fileContents: str) -> tuple[str, str, str]:
     # Returns the URL from package.json inside of a base64 encoded zip file
@@ -46,11 +96,17 @@ def grabPackageDataFromZip(fileContents: str) -> tuple[str, str, str]:
 
     with tempfile.TemporaryDirectory() as dirPath:
         zf.extractall(dirPath)
-        with open(dirPath + "/package.json") as file:
+        log("Temporary directory location", dirPath)
+        log("Extracted contents", os.listdir(dirPath))
+        # Find package.json
+        packagePath = find_file("package.json", dirPath)
+        log("package.json location: ", packagePath)
+
+        with open(packagePath) as file:
             package_data = json.load(file)
             return package_data["name"], package_data["version"], package_data["homepage"]
-            # print(package_data["homepage"])
-            # print(package_data["repository"]["url"])
+            # helper.log(package_data["homepage"])
+            # helper.log(package_data["repository"]["url"])
 
 # def convertZipToBase64(filePath: str):
 #     # Utility function only, used to generate test data
@@ -59,7 +115,7 @@ def grabPackageDataFromZip(fileContents: str) -> tuple[str, str, str]:
 #     with open(filePath, 'rb') as f:
 #         b = f.read()
 #         encoded = base64.b64encode(b)
-#         print(encoded)
+#         helper.log(encoded)
 
 def getOwnerAndRepoFromURL(url: str) -> tuple[str, str]:
     # Returns owner, repo from URL
@@ -82,15 +138,17 @@ def grabPackageDataFromURL(url: str) -> tuple[str, str, str]:
 
 
 def grabPackageDataFromRequest(parsed_body):
-    if "Content" in parsed_body:       
+    if ("Content" in parsed_body) and parsed_body["Content"] != None:       
         # Package contents. This is the zip file uploaded by the user. (Encoded as text using a Base64 encoding).
         # This will be a zipped version of an npm package's GitHub repository, minus the ".git/" directory." It will, for example, include the "package.json" file that can be used to retrieve the project homepage.
         # See https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage.
         return grabPackageDataFromZip(parsed_body["Content"])
-    elif "URL" in parsed_body:
+    elif ("URL" in parsed_body) and parsed_body["URL"] != None:
         # Ingest package from public URL
         return grabPackageDataFromURL(parsed_body["URL"])
 
 # with open("/Users/ben/code/packit23/delete_write_apis/tests/example_b64.txt", "r") as file:
 #     x = grabUrl(file.read())
-#     print(x)
+#     helper.log(x)
+
+print(grabPackageDataFromRequest({"URL": "https://github.com/text-mask/text-mask"}))

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM golang:1.16-alpine
+FROM golang:1.19-alpine
 
 WORKDIR /app
 
@@ -15,4 +15,4 @@ COPY . /app/
 EXPOSE 8080
 
 # CMD ["/package_rater_app"]
-ENTRYPOINT [ "go", "run", "src/main.go" ]
+ENTRYPOINT [ "go", "run", "." ]

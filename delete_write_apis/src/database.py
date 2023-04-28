@@ -7,11 +7,9 @@ import pymysql
 
 import sqlalchemy
 from sqlalchemy import inspect
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Table, Column, Integer, String, MetaData, LargeBinary, DateTime, Float, Boolean
 
-from . import bucket
+from . import bucket, helper
 
 # Table representations
 metadata = MetaData()
@@ -95,19 +93,19 @@ def check_if_default_exists():
 
 def create_default():
     if not check_if_default_exists():
-        print("Creating tables")
+        helper.log("Creating tables")
         metadata.create_all(engine) # Create tables
 
-        print("Creating users")
+        helper.log("Creating users")
         logins_str = os.environ["USER_LOGINS"]
         logins_json = json.loads(logins_str)
         logins_list = [{"username": u, "password": bytes(p, 'utf-8')} for u, p in logins_json.items()]
 
         with engine.begin() as conn:
             result = conn.execute(users.insert(), logins_list)
-        print("Finished creating tables & users")
+        helper.log("Finished creating tables & users")
     else:
-        print("Tables already detected, not creating")
+        helper.log("Tables already detected, not creating")
 
 def get_data_for_user(username: str) -> str:
     # Return (userid, username, password) for a user
@@ -117,23 +115,110 @@ def get_data_for_user(username: str) -> str:
         if result.rowcount > 1:
             raise Exception(f"Error: {result.rowcount} users found for {username}")
         row = result.fetchone()
-        print(f"get_password_for_user({username}): found {row}")
+        helper.log(f"get_password_for_user({username}): found {row}")
 
         if row:
             return row
         else:
-            return None
+            return None, None, None
 
-def check_if_package_exists(packageName: str, packageVersion: str):
+def check_if_package_exists(packageId: int):
     # Check if a given package name & version already exists
     with engine.begin() as conn:
-        s = packages.select().where(packages.c.name==packageName, packages.c.version==packageVersion)
+        s = packages.select().where(packages.c.id==packageId)
         result = conn.execute(s)
         return result.rowcount > 0
 
-def upload_package(name: str, version: str, author_pk: str, rating, url: str, content):
+def get_package_id(packageName: str, packageVersion: str):
+    # Check if a given package name & version already exists
+    with engine.begin() as conn:
+        s = packages.select().where(packages.c.name==packageName, packages.c.version==packageVersion)
+        row = conn.execute(s).fetchone()
+        if row:
+            return row.id
+        else:
+            return None
+
+def get_all_versions_of_package(packageName: str) -> list:
+    # Return the pk's of all versions of a package name
+    with engine.begin() as conn:
+        s = packages.select().where(packages.c.name==packageName)
+        return [row.id for row in conn.execute(s)]
+
+def upload_package(name: str, version: str, author_pk: str, rating, url: str, content, isExternal):
     # Upload to ratings table
-    print("Uploading to rating table..")
+    helper.log("Uploading to rating table..")
+    with engine.begin() as conn:
+        ins = ratings.insert().values(
+            busFactor=rating.get("BUS_FACTOR_SCORE") or 0,
+            correctness=rating.get("CORRECTNESS_SCORE") or 0,
+            rampUp=rating.get("RAMP_UP_SCORE") or 0,
+            responsiveMaintainer=rating.get("RESPONSIVENESS_MAINTAINER_SCORE") or 0,
+            licenseScore=rating.get("LICENSE_SCORE") or 0,
+            goodPinningPractice=rating.get("VERSION_SCORE") or 0,
+            pullRequest=rating.get("CODE_REVIEW_SCORE") or 0,
+            netScore=rating.get("NET_SCORE") or 0
+        )
+        result = conn.execute(ins)
+        rating_pk = result.inserted_primary_key[0]
+        helper.log(f"Rating inserted, rating_pk: {rating_pk}")
+
+    # Upload to cloud bucket
+    helper.log("Uploading binary to cloud bucket..")
+    binary_pk = rating_pk # binary_pk is same as rating_pk
+    bucket.upload_b64_blob(content, str(binary_pk)) 
+    helper.log(f"Uploaded binary, binary_pk:{binary_pk}")
+
+    # Upload to packages table
+    helper.log("Uploading to packages..")
+    with engine.begin() as conn:
+        currentTime = datetime.datetime.now(tz=datetime.timezone.utc)
+
+        ins = packages.insert().values(
+            name=name,
+            rating_pk=rating_pk,
+            author_pk=author_pk,
+            url=url,
+            binary_pk=binary_pk,
+            version=version,
+            upload_time=currentTime,
+            is_external=isExternal,
+        )
+
+        result = conn.execute(ins)
+        package_pk = result.inserted_primary_key[0]
+        helper.log(f"Package inserted, package_pk: {package_pk}")
+        return package_pk
+
+def delete_package(packageId: int) -> int:
+    # Packages table
+    with engine.begin() as conn:
+        # Get other pk's from package table
+        s = packages.select().where(packages.c.id==packageId)
+        row = conn.execute(s).first()
+        _, _, rating_pk, _, _, binary_pk, _, _, _ = row
+
+        # Delete package
+        d1 = packages.delete().where(packages.c.id==packageId)
+        conn.execute(d1)
+
+    # Delete from ratings table
+    with engine.begin() as conn:
+        d2 = ratings.delete().where(ratings.c.id==rating_pk)
+        conn.execute(d2)
+
+    return binary_pk # to be deleted
+
+def reset_database():
+    with engine.begin() as conn:
+        d1 = packages.delete()
+        conn.execute(d1)
+        d2 = ratings.delete()
+        conn.execute(d2)
+
+def update_package(id: int, author_pk: str, rating, url: str, content, isExternal):
+    # Upload to ratings table
+    helper.log("Uploading to rating table..")
     with engine.begin() as conn:
         ins = ratings.insert().values(
             busFactor=rating["BUS_FACTOR_SCORE"],
@@ -147,35 +232,47 @@ def upload_package(name: str, version: str, author_pk: str, rating, url: str, co
         )
         result = conn.execute(ins)
         rating_pk = result.inserted_primary_key[0]
-        print(f"Rating inserted, rating_pk: {rating_pk}")
+        helper.log(f"Rating inserted, rating_pk: {rating_pk}")
 
     # Upload to cloud bucket
-    print("Uploading binary to cloud bucket..")
+    helper.log("Uploading binary to cloud bucket..")
     binary_pk = rating_pk # binary_pk is same as rating_pk
     bucket.upload_b64_blob(content, str(binary_pk)) 
-    print(f"Uploaded binary, binary_pk:{binary_pk}")
+    helper.log(f"Uploaded binary, binary_pk:{binary_pk}")
 
     # Upload to packages table
-    print("Uploading to packages..")
+    helper.log("Updating packages table..")
     with engine.begin() as conn:
         currentTime = datetime.datetime.now(tz=datetime.timezone.utc)
 
-        ins = packages.insert().values(
-            name=name,
+        # Get old pks
+        s = packages.select().where(packages.c.id==id)
+        row = conn.execute(s).first()
+        _, _, old_rating_pk, _, _, old_binary_pk, _, _, _ = row
+
+        # Update with new data
+        ins = packages.update().where(packages.c.id==id).values(
             rating_pk=rating_pk,
             author_pk=author_pk,
             url=url,
             binary_pk=binary_pk,
-            version=version,
             upload_time=currentTime,
-            is_external=(content == None),
+            is_external=isExternal,
         )
 
         result = conn.execute(ins)
-        package_pk = result.inserted_primary_key[0]
-        print(f"Package inserted, package_pk: {package_pk}")
-        return package_pk
+    
+    # Delete old rating & binary
+    with engine.begin() as conn:
+        d1 = ratings.delete().where(ratings.c.id==old_rating_pk)
+        conn.execute(d1)
+    bucket.delete_blob(str(old_binary_pk))
+
+    helper.log(f"Package updated, package_pk: {id}")
+
 
 # Functions on startup
-engine = connect_with_connector()
-create_default()
+def setup_database():
+    global engine
+    engine = connect_with_connector()
+    create_default()
