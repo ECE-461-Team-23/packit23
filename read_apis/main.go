@@ -461,7 +461,15 @@ func handleRequests() {
 	router.HandleFunc("/package/{id}/rate", verifyJWT(handle_package_rate))
 	router.HandleFunc("/package/byName/{name}", verifyJWT(handle_package_byname))
 	router.HandleFunc("/package/byRegEx", verifyJWT(handle_package_byregex))
-	cors_handler := cors.Default().Handler(router)
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"https://growyourgrove.tech", "https://www.growyourgrove.tech"},
+		AllowCredentials: true,
+		AllowedMethods:   []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		// Enable Debugging for testing, consider disabling in production
+		Debug: true,
+	})
+	cors_handler := c.Handler(router)
 	log.Fatal(http.ListenAndServe(":8080", cors_handler))
 }
 
