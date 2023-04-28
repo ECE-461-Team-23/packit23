@@ -221,15 +221,14 @@ def update_package(id: int, author_pk: str, rating, url: str, content, isExterna
     helper.log("Uploading to rating table..")
     with engine.begin() as conn:
         ins = ratings.insert().values(
-            busFactor=rating["BUS_FACTOR_SCORE"],
-            correctness=rating["CORRECTNESS_SCORE"],
-            rampUp=rating["RAMP_UP_SCORE"],
-            responsiveMaintainer=rating["RESPONSIVENESS_MAINTAINER_SCORE"],
-            licenseScore=rating["LICENSE_SCORE"],
-            goodPinningPractice=0, #rating["GOOD_PINNING_PRACTICE_SCORE"], #TODO:
-            pullRequest=0, #rating["PULL_REQUEST"], TODO:
-            # VERSION_SCORE?
-            netScore=rating["NET_SCORE"]
+            busFactor=rating.get("BUS_FACTOR_SCORE") or 0,
+            correctness=rating.get("CORRECTNESS_SCORE") or 0,
+            rampUp=rating.get("RAMP_UP_SCORE") or 0,
+            responsiveMaintainer=rating.get("RESPONSIVENESS_MAINTAINER_SCORE") or 0,
+            licenseScore=rating.get("LICENSE_SCORE") or 0,
+            goodPinningPractice=rating.get("VERSION_SCORE") or 0,
+            pullRequest=rating.get("CODE_REVIEW_SCORE") or 0,
+            netScore=rating.get("NET_SCORE") or 0
         )
         result = conn.execute(ins)
         rating_pk = result.inserted_primary_key[0]
