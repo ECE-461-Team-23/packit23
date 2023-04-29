@@ -106,9 +106,6 @@ func getMetadataFromName(db *sql.DB, name string) ([]PackageMetadata, error) {
 		}
 		metadataList = append(metadataList, md)
 	}
-	if len(metadataList) == 0 {
-		return metadataList, nil
-	}
 	return metadataList, nil
 }
 

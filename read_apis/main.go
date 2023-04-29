@@ -357,7 +357,8 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// for list of names that match regex, get metadata and append to list of metadata
-	rows, err := db.Query("SELECT id, name, version FROM packages WHERE name REGEXP \"?\";", body.RegEx)
+	sqlquery := `SELECT id, name, version FROM packages WHERE name REGEXP "` + body.RegEx + `";`
+	rows, err := db.Query(sqlquery)
 	if err != nil {
 		fmt.Print(err)
 		return_500_packet(w, r)
@@ -423,7 +424,7 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 		if len(sortedVersions) == 1 {
 			var ret RegExReturn
 			ret.Version = md_list[0].Version
-			ret.Name = md_list[i].Name
+			ret.Name = md_list[0].Name
 			retList = append(retList, ret)
 		} else {
 			// get begin and end of list
@@ -456,11 +457,11 @@ func handle_package_byregex(w http.ResponseWriter, r *http.Request) {
 
 func handleRequests() {
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/packages", verifyJWT(handle_packages))
-	router.HandleFunc("/package/{id}", verifyJWT(handle_package_id))
-	router.HandleFunc("/package/{id}/rate", verifyJWT(handle_package_rate))
-	router.HandleFunc("/package/byName/{name}", verifyJWT(handle_package_byname))
-	router.HandleFunc("/package/byRegEx", verifyJWT(handle_package_byregex))
+	router.HandleFunc("/packages", verifyJWT(handle_packages)).Methods("POST")
+	router.HandleFunc("/package/{id}", verifyJWT(handle_package_id)).Methods("GET")
+	router.HandleFunc("/package/{id}/rate", verifyJWT(handle_package_rate)).Methods("GET")
+	router.HandleFunc("/package/byName/{name}", verifyJWT(handle_package_byname)).Methods("GET")
+	router.HandleFunc("/package/byRegEx", verifyJWT(handle_package_byregex)).Methods("POST")
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"https://growyourgrove.tech", "https://www.growyourgrove.tech"},
 		AllowCredentials: true,
