@@ -1,6 +1,7 @@
-const authenticateCall = "https://good-spec-d4rgapcc.uc.gateway.dev/authenticate";
-const baseURL = "https://good-spec-d4rgapcc.uc.gateway.dev/";
-const id = window.location.pathname.charAt(window.location.pathname.length - 1);
+const packageBaseURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev/";
+// const id = window.location.pathname.charAt(window.location.pathname.length - 1);
+const id = 1;
+const packageToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI4MjU4MTgsIm5iZiI6MTY4MjY1MzAxOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjY1MzAxOCwic3ViIjoxfQ.P1l3kX2lszRNdlVqC3H08NLfvuYmtG77U-yWAIlggjE";
 
 var IDSlotEl = document.getElementById("IDSlot");
 var NameSlotEl = document.getElementById("NameSlot");
@@ -20,21 +21,27 @@ var PPSlotEl = document.getElementById("PPSlot");
 var PRSlotEl = document.getElementById("PRSlot");
 var NetScoreSlotEl = document.getElementById("NetScoreSlot");
 
-function setupPage() {
+function setupPackagePage() {
     renderPackageInfo();
     renderRatingInfo();
 }
 
-function renderPackageInfo() {
-    fetch('/package/' + id, { // not 100% sure on this endpoint, might need more stuff
-        method: 'POST',
+async function renderPackageInfo() {
+    const pkgInfoResponse = await fetch(packageBaseURL + '/package/' + id, { 
+        method: 'GET',
         headers: {
+            'id' : id,
+            'X-Authorization': packageToken,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(packageData)
-    })
-        .then(response => response.json())
-
+    }).then(pkgInfoResponse => {
+        if (!pkgInfoResponse.ok) {
+            throw new Error('Network response was not ok');
+        }
+        console.log(pkgInfoResponse)
+        console.log('Resource deleted successfully');
+    }).catch(error => console.log(error));
+    console.log(pkgInfoResponse);
     // // HTML IDs: IDSlot, NameSlot, URLSlot, VersionSlot, AuthorSlot, DownloadSlot
     // IDSlotEl.value = packageData.id;
     // NameSlotEl.value = packageData.name;
@@ -83,19 +90,19 @@ function checkPackage() {
 
 async function deletePackage() {
     // HTML IDs: packageSaveModal, packageDeleteModal
-    const response = await fetch(baseURL.concat("package/", id), {
-        method: 'DELETE',
-        headers: {
-            'Access-Control-Request-Method': 'DELETE',
-            'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
-        },
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        console.log(response)
-        console.log('Resource deleted successfully');
-    }).catch(error => console.log(error));
-    console.log(response);
-    console.log("End of Package Deletion");
+    // const response = await fetch(packageBaseURL.concat("package/", id), {
+    //     method: 'DELETE',
+    //     headers: {
+    //         'Access-Control-Request-Method': 'DELETE',
+    //         'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
+    //     },
+    // }).then(response => {
+    //     if (!response.ok) {
+    //         throw new Error('Network response was not ok');
+    //     }
+    //     console.log(response)
+    //     console.log('Resource deleted successfully');
+    // }).catch(error => console.log(error));
+    // console.log(response);
+    // console.log("End of Package Deletion");
 }
