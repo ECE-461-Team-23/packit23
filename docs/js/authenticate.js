@@ -1,17 +1,34 @@
-const baseURL = "https://good-spec-d4rgapcc.uc.gateway.dev/";
-/*
-{
-    "User": {
-        "name": "ece30861defaultadminuser",
-        "isAdmin": true
-    },
-    "Secret": {
-        "password": "correcthorsebatterystaple123(!__+@**(A’”`;DROP TABLE packages;"
-    }
-}
-*/
-function authenticate(username, password) {
-    
+const baseURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev/";
+const usernameInput = document.getElementById("usernameInput");
+const passwordInput = document.getElementById("passwordInput");
+const loginSuccess = document.getElementById("loginSuccess");
+
+async function authenticate() {
+    const authResponse = await fetch(baseURL + "/authenticate", {
+        method: 'PUT',
+        // body: JSON.stringify([
+        //     {
+        //         "User": {
+        //             "name": "ece30861defaultadminuser",
+        //             "isAdmin": true
+        //         },
+        //         "Secret": {
+        //             "password": "correcthorsebatterystaple123(!__+@**(A’”`;DROP TABLE packages;"
+        //         }
+        //     }
+        // ])
+    }).then(authResponse => {
+        if (!authResponse.ok) {
+            throw new Error('Network response was not ok');
+        } else {
+            // IF SUCCESSFUL:
+            loginSuccess.style.display = "block";
+            // settoken
+        }
+        console.log(authResponse)
+        console.log('Resource deleted successfully');
+    }).catch(error => console.log(error));
+    console.log(authResponse);
 }
 
 function setToken(token) {

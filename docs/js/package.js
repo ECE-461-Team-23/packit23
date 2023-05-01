@@ -1,7 +1,7 @@
 const packageBaseURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev/";
 // const id = window.location.pathname.charAt(window.location.pathname.length - 1);
 const id = 1;
-const packageToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI4MjU4MTgsIm5iZiI6MTY4MjY1MzAxOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjY1MzAxOCwic3ViIjoxfQ.P1l3kX2lszRNdlVqC3H08NLfvuYmtG77U-yWAIlggjE";
+const packageToken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODMwODE0MjgsIm5iZiI6MTY4MjkwODYyOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjkwODYyOCwic3ViIjoxfQ.A1NUmac8P5IfyAuSida8DHfTf-5y6rl5JnQLoF9T_g8";
 
 var IDSlotEl = document.getElementById("IDSlot");
 var NameSlotEl = document.getElementById("NameSlot");

@@ -92,13 +92,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">Login</h1>
+                <h1 class="modal-title fs-5">Reset/Deletion Modal</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <p id="resetSuccessMsg" style="color:blue; display:none">Registry has been Reset</p>
+                <p id="deleteSuccessMsg" style="color:blue; display:none">Package has been packageDeleteModalLabel</p>
                 <div>
                     <button id="resetBtn" class="btn btn-primary" onclick="ResetRegistry()">Reset Registry</button>
                 </div>
+                <hr>
+                <!-- <form> -->
+                    <p>Delete Package By Name: Name Input</p>
+                    <input type="text" class="form-control mb-3" id="deletePkgByName" placeholder="Package Name to Delete">
+                <!-- </form> -->
+                <button id="deleteByNameBtn" class="btn btn-primary" onclick="DeletePackageByName()">Delete this Package</button>
+                <hr>
+                <!-- <form> -->
+                    <p>Delete Package By ID: ID Input</p>
+                    <input type="text" class="form-control mb-3" id="deletePkgByID" placeholder="Package ID to Delete">
+                <!-- </form> -->
+                <button id="deleteByIDBtn" class="btn btn-primary" onclick="DeletePackageByID()">Delete this Package</button>
             </div>
             <div class="modal-footer">
                 <div>
@@ -108,5 +122,4 @@
         </div>
     </div>
 </div>
-
 </html>

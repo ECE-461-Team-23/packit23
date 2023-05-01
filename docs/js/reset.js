@@ -1,5 +1,5 @@
 const basResetURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev";
-const resettoken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI4MjU4MTgsIm5iZiI6MTY4MjY1MzAxOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjY1MzAxOCwic3ViIjoxfQ.P1l3kX2lszRNdlVqC3H08NLfvuYmtG77U-yWAIlggjE";
+const resettoken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODMwODE0MjgsIm5iZiI6MTY4MjkwODYyOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjkwODYyOCwic3ViIjoxfQ.A1NUmac8P5IfyAuSida8DHfTf-5y6rl5JnQLoF9T_g8";
 const deletePkgByName = document.getElementById("deletePkgByName");
 const deletePkgByID = document.getElementById("deletePkgByID");
 const deleteSuccessMsg = document.getElementById("deleteSuccessMsg");
