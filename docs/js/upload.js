@@ -1,11 +1,12 @@
-const uploadAPICall = "https://good-spec-d4rgapcc.uc.gateway.dev/package";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg";
+const uploadtoken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI4MjU4MTgsIm5iZiI6MTY4MjY1MzAxOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjY1MzAxOCwic3ViIjoxfQ.P1l3kX2lszRNdlVqC3H08NLfvuYmtG77U-yWAIlggjE";
+const uploadAPICall = "https://npm-registry-6dvk0w0m.uc.gateway.dev/package";
 
 const formPackageName = document.getElementById("formPackageName");
 const formVersionNo = document.getElementById("formVersionNo");
 const formZipUpload = document.getElementById("formZipUpload");
 const formURL = document.getElementById("formURL");
 
+const successMsg = document.getElementById("successMsg");
 const errPermsMsg = document.getElementById("errPermsMsg");
 const errMsg = document.getElementById("errMsg");
 
@@ -37,12 +38,13 @@ async function submitPackageByURL(inputUrl) {
         // mode: 'no-cors',
         method: 'POST',
         headers: {
+            // Access-Control-Expose-Headers: 
             // 'Content-Type': "application/json",
             // 'Accept': "*/*",
             // 'Accept-Encoding': "gzip, deflate, br",
             // 'Connection': "keep-alive",
-            'Fuck' : "6969696",
-            'X-Authorization': "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODI2NDk0MDUsIm5iZiI6MTY4MjQ3NjYwNSwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjQ3NjYwNSwic3ViIjoxfQ.mo04vigHZ9seVWUYbxNp_P5mMJZRQpeDRrd7gtwtwPg"
+            // 'Fuck' : "6969696",
+            'X-Authorization': uploadtoken
         },
         body: JSON.stringify({
             // "Content": "",
@@ -52,9 +54,10 @@ async function submitPackageByURL(inputUrl) {
     }).catch(error => console.log(error));
     console.log(response);
     console.log('end of submit by URL');
+    successMsg.style.display = "block";
 }
 
-function checkURLSubmission() {
+function checkURL() {
     if (formURL.value == "") {
         console.log("empty URL upload");
         errURLMsg.style.display = "block";
@@ -78,6 +81,9 @@ function checkPackage() {
     //     errMsg.style.display = "block";
     //     console.log("empty zip upload");
     // } 
+
+    errMsg.style.display = "none";
+    successMsg.style.display = "none";
     if (formURL.value != "") {
         submitPackageByURL(formURL.value);
     } else if (formZipUpload.value != "") {

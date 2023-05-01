@@ -55,6 +55,7 @@
         &nbsp;
         <p>Upload using one of the below forms, either with just the URL, or with detailed package info</p>
         <!-- <h2>Upload</h2> -->
+        <p id="successMsg" style="color:blue; display:none">Request Sent</p>
         <p id="errURLMsg" style="color:red; display: none">No URL entered</p>
         <p id="errZipMsg" style="color:red; display: none">Your Package has missing fields</p>
         <p id="errPermsMsg" style="color:red; display: none">You do not have permission to upload packages</p>
@@ -65,7 +66,7 @@
                     <input type="text" class="form-control" id="formURL" placeholder="">
                 </div>
         </form>
-        <button id="formSubmitURL" onclick="checkURLSubmission()" class="btn btn-primary">Submit</button>
+        <button id="formSubmitURL" onclick="checkURL()" class="btn btn-primary">Submit</button>
         <br>
         <hr>
         <form>

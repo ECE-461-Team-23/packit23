@@ -9,6 +9,7 @@
     integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
     crossorigin="anonymous"></script>
 
+<script src="js/package.js" type="text/javascript" defer></script>
 <script src="js/authenticate.js" type="text/javascript" defer></script>
 <script src="js/reset.js" type="text/javascript" defer></script>
 <script src="components/header.js" type="text/javascript" defer></script>
@@ -17,7 +18,7 @@
 <header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid">
-            <a class="navbar-brand nav-link active" href="index.html">Packit</a>
+            <a class="navbar-brand nav-link active" href="https://www.growyourgrove.tech/">Packit</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
                 aria-label="Toggle navigation">
@@ -52,6 +53,7 @@
     <div class="container">
         <h2>ERROR 404: how did you get here?</h2>
         <a href="package.html">Go to Empty Package Page</a>
+        <a href="package.html/package/1">Go to Empty Package Page</a>
     </div>
 </body>
 <footer-component></footer-component>
@@ -65,6 +67,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <p id="loginSuccessMsg" style="color:blue; display:none">Logged In Successfully</p>
                 <div class="mb-3 form-group">
                     <label for="usernameInput">Username:</label>
                     <input type="text" class="form-control mb-3" id="usernameInput">
@@ -87,13 +90,27 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5">Login</h1>
+                <h1 class="modal-title fs-5">Reset/Deletion Modal</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                <p id="resetSuccessMsg" style="color:blue; display:none">Registry has been Reset</p>
+                <p id="deleteSuccessMsg" style="color:blue; display:none">Package has been packageDeleteModalLabel</p>
                 <div>
                     <button id="resetBtn" class="btn btn-primary" onclick="ResetRegistry()">Reset Registry</button>
                 </div>
+                <hr>
+                <!-- <form> -->
+                    <p>Delete Package By Name: Name Input</p>
+                    <input type="text" class="form-control mb-3" id="deletePkgByName" placeholder="Package Name to Delete">
+                <!-- </form> -->
+                <button id="deleteByNameBtn" class="btn btn-primary" onclick="DeletePackageByName()">Delete this Package</button>
+                <hr>
+                <!-- <form> -->
+                    <p>Delete Package By ID: ID Input</p>
+                    <input type="text" class="form-control mb-3" id="deletePkgByID" placeholder="Package ID to Delete">
+                <!-- </form> -->
+                <button id="deleteByIDBtn" class="btn btn-primary" onclick="DeletePackageByID()">Delete this Package</button>
             </div>
             <div class="modal-footer">
                 <div>
