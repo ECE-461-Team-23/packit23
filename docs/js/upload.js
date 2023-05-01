@@ -1,5 +1,5 @@
 const uploadtoken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODMwODE0MjgsIm5iZiI6MTY4MjkwODYyOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjkwODYyOCwic3ViIjoxfQ.A1NUmac8P5IfyAuSida8DHfTf-5y6rl5JnQLoF9T_g8";
-const uploadAPICall = "https://npm-registry-6dvk0w0m.uc.gateway.dev/package";
+const uploadAPICall = "https://npm-registry-6dvk0w0m.uc.gateway.dev/";
 
 const formPackageName = document.getElementById("formPackageName");
 const formVersionNo = document.getElementById("formVersionNo");
@@ -34,7 +34,7 @@ const errMsg = document.getElementById("errMsg");
 }
 *********************************************************************************/
 async function submitPackageByURL(inputUrl) {
-    const response = await fetch(uploadAPICall, {
+    const response = await fetch(uploadAPICall + "package", {
         // mode: 'no-cors',
         method: 'POST',
         headers: {
@@ -43,7 +43,6 @@ async function submitPackageByURL(inputUrl) {
             // 'Accept': "*/*",
             // 'Accept-Encoding': "gzip, deflate, br",
             // 'Connection': "keep-alive",
-            // 'Fuck' : "6969696",
             'X-Authorization': uploadtoken
         },
         body: JSON.stringify({
@@ -58,6 +57,8 @@ async function submitPackageByURL(inputUrl) {
 }
 
 function checkURL() {
+    errMsg.style.display = "none";
+    successMsg.style.display = "none";
     if (formURL.value == "") {
         console.log("empty URL upload");
         errURLMsg.style.display = "block";

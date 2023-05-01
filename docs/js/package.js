@@ -27,7 +27,7 @@ function setupPackagePage() {
 }
 
 async function renderPackageInfo() {
-    const pkgInfoResponse = await fetch(packageBaseURL + '/package/' + id, { 
+    const pkgInfoResponse = await fetch(packageBaseURL + 'package/' + id, { 
         method: 'GET',
         headers: {
             'id' : id,

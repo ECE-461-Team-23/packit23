@@ -1,4 +1,4 @@
-const basResetURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev";
+const basResetURL = "https://npm-registry-6dvk0w0m.uc.gateway.dev/";
 const resettoken = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODMwODE0MjgsIm5iZiI6MTY4MjkwODYyOCwiaXNzIjoicGFja2l0MjMiLCJhdWQiOiJwYWNraXQyMyIsImlhdCI6MTY4MjkwODYyOCwic3ViIjoxfQ.A1NUmac8P5IfyAuSida8DHfTf-5y6rl5JnQLoF9T_g8";
 const deletePkgByName = document.getElementById("deletePkgByName");
 const deletePkgByID = document.getElementById("deletePkgByID");
@@ -6,7 +6,7 @@ const deleteSuccessMsg = document.getElementById("deleteSuccessMsg");
 const resetSuccessMsg = document.getElementById("resetSuccessMsg");
 
 async function ResetRegistry() {
-    const resetResponse = await fetch(basResetURL, {
+    const resetResponse = await fetch(basResetURL + "/reset", {
         method: 'DELETE',
         headers: {
             'Access-Control-Request-Method': 'DELETE',
@@ -25,7 +25,7 @@ async function ResetRegistry() {
 }
 
 async function DeletePackageByName() {
-    const byNameResponse = await fetch(basResetURL + "/byName/" + deletePkgByName.value, {
+    const byNameResponse = await fetch(basResetURL + "byName/" + deletePkgByName.value, {
         method: 'DELETE',
         headers: {
             'name': deletePkgByName.value,
@@ -43,7 +43,7 @@ async function DeletePackageByName() {
 }
 
 
-async function DeletePackageByid() {
+async function DeletePackageByID() {
     const byNameResponse = await fetch(basResetURL + deletePkgByID.value, {
         method: 'DELETE',
         headers: {
