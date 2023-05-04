@@ -236,7 +236,6 @@ definitions:
     required:
       - password
     type: object
-host: package-registry-461.appspot.com
 info:
   contact:
     email: davisjam@purdue.edu
@@ -254,6 +253,8 @@ paths:
     put:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Create an access token.
       operationId: CreateAuthToken
       consumes:
@@ -292,6 +293,8 @@ paths:
     post:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       operationId: PackageCreate
@@ -320,6 +323,8 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageByNameDelete
       parameters:
         - description: |-
@@ -344,6 +349,8 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Return the history of this package (all versions).
       operationId: PackageByNameGet
       parameters:
@@ -405,6 +412,8 @@ paths:
     post:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -437,6 +446,8 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageDelete
       parameters:
         - description: Package ID
@@ -457,6 +468,8 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Return this package.
       operationId: PackageRetrieve
       parameters:
@@ -500,6 +513,8 @@ paths:
     put:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -540,6 +555,8 @@ paths:
     get:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       operationId: PackageRate
       parameters: []
       produces:
@@ -585,6 +602,8 @@ paths:
     post:
       x-google-backend:
         address: ${read_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       consumes:
         - application/json
       description: >-
@@ -642,6 +661,8 @@ paths:
     delete:
       x-google-backend:
         address: ${write_url}
+        path_translation: APPEND_PATH_TO_ADDRESS
+        deadline: 300.0
       description: Reset the registry to a system default state.
       operationId: RegistryReset
       parameters: []
@@ -676,3 +697,7 @@ securityDefinitions:
     type: apiKey
 swagger: '2.0'
 x-components: {}
+host: "finalapi-333itlr63cw6n.apigateway.packit23-test3.cloud.goog"
+x-google-endpoints:
+- name: "finalapi-333itlr63cw6n.apigateway.packit23-test3.cloud.goog"
+  allowCors: True

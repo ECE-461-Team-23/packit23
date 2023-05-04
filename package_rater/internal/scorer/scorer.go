@@ -26,9 +26,15 @@ func CalculatePackageScore(repo *models.Repository) {
 }
 
 func CalculateNetScore(repo *models.Repository) {
-	netScore := (repo.RampUpTimeScore * models.Weights["Ramp Up Time"]) + (repo.CorrectnessScore * models.Weights["Correctness"]) +
+	netScore := ((repo.RampUpTimeScore * models.Weights["Ramp Up Time"]) + (repo.CorrectnessScore * models.Weights["Correctness"]) +
 		(repo.BusFactorScore * models.Weights["Bus Factor"] * -1.0) + (repo.ResponsivenessScore * models.Weights["Responsiveness"]) +
-		(repo.LicenseCompatibilityScore * models.Weights["License Compatibility"])
+		(repo.VersionScore * models.Weights["Version Pinning"]) + (repo.CodeReviewScore * models.Weights["Code Reviews"])) * repo.LicenseCompatibilityScore
+
+	if netScore > 1 {
+		netScore = 1
+	} else if netScore < 0 {
+		netScore = 0
+	}
 	repo.NetScore = netScore
 	repo.NetPercentage = (netScore / float64(8)) * float64(100)
 }
@@ -38,6 +44,7 @@ func CalculateVersionScore(repo *models.Repository) {
 
 	repo.VersionScore = score
 }
+
 func CalculateRampUpTime(repo *models.Repository) {
 	rampUpTime := 0.0
 	res, _ := regexp.MatchString(`(?i)docs\b`, repo.Readme)

@@ -1,7 +1,7 @@
 # Settings
 locals {
   # General
-  github_branch = "terraform"
+  github_branch = "main"
   artifact_registry_repo_name = "container-repo"
   region = "us-central1"
 
@@ -20,15 +20,18 @@ locals {
   write_apis_app_image_name = "write-apis-image"
 
   # SQL
-  mysql_db_name = "mysql-db"
+  mysql_db_name = "appdata"
   mysql_db_instance_name = "mysql-instance"
+
+  # Bucket
+  bucket_db_name = "binaries"
 }
 
 terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.51.0"
+      version = "4.61.0"
     }
   }
 }
@@ -99,6 +102,11 @@ resource "google_project_service" "service_management_api" {
   disable_on_destroy = false # Need to stay false
 }
 
+resource "google_project_service" "sql_admin_api" {
+  service = "sqladmin.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Run containers for package-rater-app (container image is overwritten in cloudbuild.yaml)
 resource "google_cloud_run_service" "package_rater_run_service" {
   name = local.package_rater_app_cloud_run_name
@@ -126,6 +134,13 @@ resource "google_cloud_run_service" "package_rater_run_service" {
           name = "LOG_LEVEL"
           value = "2"
         }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
+          }
+        }
       }
 
       timeout_seconds = 90
@@ -148,7 +163,7 @@ resource "google_cloud_run_service" "package_rater_run_service" {
   }
 
   depends_on = [google_project_service.cloud_run_api,  # Waits for the Cloud Run API to be enabled
-                google_secret_manager_secret_iam_member.package_rater_access] # Make sure service account is attached to policy to give access to secret token
+                google_secret_manager_secret_iam_member.package_rater_token_access] # Make sure service account is attached to policy to give access to secret token
 }
 
 # Run containers for read apis
@@ -170,8 +185,16 @@ resource "google_cloud_run_service" "read_apis_run_service" {
           value = local.region
         }
         env {
-          name = "INSTANCE_NAME"
-          value = local.mysql_db_instance_name
+          name = "PACKAGE_RATER_URL"
+          value = google_cloud_run_service.package_rater_run_service.status[0].url
+        }
+        env {
+          name = "BUCKET_NAME"
+          value = google_storage_bucket.binary_bucket.name
+        }
+        env {
+          name = "INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.mysql_instance.connection_name
         }
         env {
           name = "DB_NAME"
@@ -182,7 +205,7 @@ resource "google_cloud_run_service" "read_apis_run_service" {
           value = local.read_db_user_name
         }
         env {
-          name = "DB_PASSWORD"
+          name = "DB_PASS"
           value_from {
             secret_key_ref {
               name = "READ_USER_PASSWORD"
@@ -190,7 +213,24 @@ resource "google_cloud_run_service" "read_apis_run_service" {
             }
           }
         }
+        env {
+          name = "JWT_SECRET"
+          value_from {
+            secret_key_ref {
+              name = "JWT_SECRET"
+              key  = "latest"
+            }
+          }
+        }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
+          }
+        }
       }
+
 
       timeout_seconds = 300
       container_concurrency = 1
@@ -199,6 +239,8 @@ resource "google_cloud_run_service" "read_apis_run_service" {
 
     metadata {
       annotations = {
+        "run.googleapis.com/client-name" = "terraform"
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.mysql_instance.connection_name
         "autoscaling.knative.dev/maxScale" = "20"
       }
     }
@@ -210,7 +252,9 @@ resource "google_cloud_run_service" "read_apis_run_service" {
   }
 
   depends_on = [google_project_service.cloud_run_api,
-                google_secret_manager_secret_iam_member.read_apis_access]
+                google_secret_manager_secret_iam_member.read_apis_access,
+                google_cloud_run_service.package_rater_run_service,
+                google_storage_bucket_iam_member.read_apis_bucket_access]
 }
 
 # Run containers for write apis
@@ -228,12 +272,29 @@ resource "google_cloud_run_service" "write_apis_run_service" {
           value = var.project_id
         }
         env {
+          name = "GITHUB_TOKEN"
+          value_from {
+            secret_key_ref {
+              name = "GITHUB_TOKEN"
+              key  = "latest"
+            }
+          }
+        }
+        env {
           name = "REGION"
           value = local.region
         }
         env {
-          name = "INSTANCE_NAME"
-          value = local.mysql_db_instance_name
+          name = "PACKAGE_RATER_URL"
+          value = google_cloud_run_service.package_rater_run_service.status[0].url
+        }
+        env {
+          name = "BUCKET_NAME"
+          value = google_storage_bucket.binary_bucket.name
+        }
+        env {
+          name = "INSTANCE_CONNECTION_NAME"
+          value = google_sql_database_instance.mysql_instance.connection_name
         }
         env {
           name = "DB_NAME"
@@ -244,12 +305,37 @@ resource "google_cloud_run_service" "write_apis_run_service" {
           value = local.write_db_user_name
         }
         env {
-          name = "DB_PASSWORD"
+          name = "DB_PASS"
           value_from {
             secret_key_ref {
               name = "WRITE_USER_PASSWORD"
               key  = "latest"
             }
+          }
+        }
+        env {
+          name = "JWT_SECRET"
+          value_from {
+            secret_key_ref {
+              name = "JWT_SECRET"
+              key  = "latest"
+            }
+          }
+        }
+        env {
+          name = "USER_LOGINS"
+          value_from {
+            secret_key_ref {
+              name = "USER_LOGINS"
+              key  = "latest"
+            }
+          }
+        }
+
+        resources {
+          limits = {
+            cpu = "1000m"
+            memory = "2Gi"
           }
         }
       }
@@ -261,6 +347,8 @@ resource "google_cloud_run_service" "write_apis_run_service" {
 
     metadata {
       annotations = {
+        "run.googleapis.com/client-name" = "terraform"
+        "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.mysql_instance.connection_name
         "autoscaling.knative.dev/maxScale" = "20"
       }
     }
@@ -272,7 +360,10 @@ resource "google_cloud_run_service" "write_apis_run_service" {
   }
 
   depends_on = [google_project_service.cloud_run_api,
-                google_secret_manager_secret_iam_member.write_apis_access]
+                google_secret_manager_secret_iam_member.write_apis_access,
+                google_cloud_run_service.package_rater_run_service,
+                google_secret_manager_secret_iam_member.write_apis_token_access,
+                google_storage_bucket_iam_member.write_apis_bucket_access]
 }
 
 # Automatically build containers
@@ -381,6 +472,26 @@ resource "google_secret_manager_secret" "write_user_password_manager" {
   depends_on = [ google_project_service.secret_manager_api ]
 }
 
+resource "google_secret_manager_secret" "jwt_secret_manager" {
+  secret_id = "JWT_SECRET"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
+resource "google_secret_manager_secret" "user_logins_manager" {
+  secret_id = "USER_LOGINS"
+
+  replication {
+    automatic = true
+  }
+
+  depends_on = [ google_project_service.secret_manager_api ]
+}
+
 # Create a new version of "Github Token" secret
 resource "google_secret_manager_secret_version" "github_token_manager_version" {
   secret   = google_secret_manager_secret.github_token_manager.id
@@ -397,13 +508,30 @@ resource "google_secret_manager_secret_version" "write_user_password_secret" {
   secret_data = var.write_user_password
 }
 
+resource "google_secret_manager_secret_version" "jwt_secret" {
+  secret   = google_secret_manager_secret.jwt_secret_manager.id
+  secret_data = var.jwt_secret
+}
+
+resource "google_secret_manager_secret_version" "user_logins_secret" {
+  secret   = google_secret_manager_secret.user_logins_manager.id
+  secret_data = jsonencode(var.user_logins)
+}
+
 # Give service accounts access to "Github Token" secret
-resource "google_secret_manager_secret_iam_member" "package_rater_access" {
+resource "google_secret_manager_secret_iam_member" "package_rater_token_access" {
   secret_id = google_secret_manager_secret.github_token_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
   member = "serviceAccount:${google_service_account.package_rater_service_account.email}"
 }
 
+resource "google_secret_manager_secret_iam_member" "write_apis_token_access" {
+  secret_id = google_secret_manager_secret.github_token_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+# Give access to passwords for DB
 resource "google_secret_manager_secret_iam_member" "read_apis_access" {
   secret_id = google_secret_manager_secret.read_user_password_manager.secret_id
   role = "roles/secretmanager.secretAccessor"
@@ -416,6 +544,65 @@ resource "google_secret_manager_secret_iam_member" "write_apis_access" {
   member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
 }
 
+# Give access to JWT secret
+resource "google_secret_manager_secret_iam_member" "read_apis_jwt_access" {
+  secret_id = google_secret_manager_secret.jwt_secret_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "write_apis_jwt_access" {
+  secret_id = google_secret_manager_secret.jwt_secret_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+# Give access to user logins
+resource "google_secret_manager_secret_iam_member" "write_apis_user_logins_access" {
+  secret_id = google_secret_manager_secret.user_logins_manager.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+# Give service accounts database access
+resource "google_project_iam_member" "write_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.editor"
+  member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+resource "google_project_iam_member" "read_apis_db_access" {
+  project = var.project_id
+  role = "roles/cloudsql.client"
+  member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+resource "google_project_iam_member" "write_apis_db_user" {  
+ project = var.project_id
+ role   = "roles/cloudsql.instanceUser"  
+ member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}  
+
+resource "google_project_iam_member" "read_apis_db_user" {  
+ project = var.project_id
+ role   = "roles/cloudsql.instanceUser"  
+ member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}  
+
+# Bucket Access
+resource "google_storage_bucket_iam_member" "write_apis_bucket_access" {  
+ bucket = google_storage_bucket.binary_bucket.name
+ role   = "roles/storage.objectAdmin"  
+ member = "serviceAccount:${google_service_account.write_apis_service_account.email}"
+}
+
+resource "google_storage_bucket_iam_member" "read_apis_bucket_access" {  
+ bucket = google_storage_bucket.binary_bucket.name
+ role   = "roles/storage.objectViewer"  
+ member = "serviceAccount:${google_service_account.read_apis_service_account.email}"
+}
+
+# Outputs
 output "package_rater_service_url" {
   value = google_cloud_run_service.package_rater_run_service.status[0].url
   description = "url for package rater service"
@@ -431,14 +618,51 @@ output "write_apis_service_url" {
   description = "url for write apis service"
 }
 
+# Bucket
+resource "google_storage_bucket" "binary_bucket" {
+  name          = "binaries-${random_id.bucket_name_suffix.hex}"
+  location      = "US"
+  force_destroy = true
+
+  uniform_bucket_level_access = true
+  public_access_prevention = "enforced"
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      num_newer_versions = 3
+    }
+    action {
+      type = "Delete"
+    }
+  }
+}
+
+resource "random_id" "bucket_name_suffix" {
+  byte_length = 8
+}
+
 # SQL Database
-resource "google_sql_database_instance" "mysql-instance" {
+resource "google_sql_database_instance" "mysql_instance" {
   name             = local.mysql_db_instance_name
   region           = local.region
   database_version = "MYSQL_8_0"
   settings {
     tier = "db-f1-micro"
-    disk_size = 10 # GB
+    disk_size = 100 # GB
+
+    database_flags {
+      name  = "cloudsql_iam_authentication" #"cloudsql.iam_authentication"
+      value = "on"
+    }
+
+    # database_flags {
+    #   name  = "cloudsql.iam_authentication"
+    #   value = "on"
+    # }
   }
 
   deletion_protection  = "true"
@@ -446,64 +670,62 @@ resource "google_sql_database_instance" "mysql-instance" {
 
 resource "google_sql_database" "database" {
   name = local.mysql_db_name
-  instance = local.mysql_db_instance_name
-}
-
-resource "random_id" "db_name_suffix" {
-  byte_length = 4
+  instance = google_sql_database_instance.mysql_instance.name
 }
 
 # SQL users
 resource "google_sql_user" "read-user" {
   name     = local.read_db_user_name
-  instance = local.mysql_db_instance_name
+  instance = google_sql_database_instance.mysql_instance.name
+  # type = "CLOUD_IAM_USER"
   host     = "%"
   password = var.read_user_password
 }
 
 resource "google_sql_user" "write-user" {
   name     = local.write_db_user_name
-  instance = local.mysql_db_instance_name
+  instance = google_sql_database_instance.mysql_instance.name
+  # type = "CLOUD_IAM_USER"
   host     = "%"
   password = var.write_user_password
 }
 
-# API Gateway
-resource "google_api_gateway_api" "api_gw" {
-  project = var.project_id
-  provider = google-beta
-  api_id = "my-api"
+# API Gateway - Create by hand for final project
+# resource "google_api_gateway_api" "api_gw" {
+#   project = var.project_id
+#   provider = google-beta
+#   api_id = "my-api"
 
-  depends_on = [ google_project_service.api_gateway_api ]
-}
+#   depends_on = [ google_project_service.api_gateway_api ]
+# }
 
-resource "google_api_gateway_api_config" "api_cfg" {
-  project = var.project_id
-  provider = google-beta
-  api = google_api_gateway_api.api_gw.api_id
-  api_config_id = "api-config"
+# resource "google_api_gateway_api_config" "api_cfg" {
+#   project = var.project_id
+#   provider = google-beta
+#   api = google_api_gateway_api.api_gw.api_id
+#   api_config_id = "api-config"
 
-  openapi_documents {
-    document {
-      path = "api_spec.yaml"
-      contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
-    }
-  }
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   openapi_documents {
+#     document {
+#       path = "api_spec.yaml"
+#       contents = base64encode(templatefile("${path.module}/api_spec.yaml", { read_url=google_cloud_run_service.read_apis_run_service.status[0].url, write_url=google_cloud_run_service.write_apis_run_service.status[0].url }))
+#     }
+#   }
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-resource "google_api_gateway_gateway" "gateway" {
-  project = var.project_id
-  region = local.region
-  provider = google-beta
-  api_config = google_api_gateway_api_config.api_cfg.id
-  gateway_id = "api-gw"
+# resource "google_api_gateway_gateway" "gateway" {
+#   project = var.project_id
+#   region = local.region
+#   provider = google-beta
+#   api_config = google_api_gateway_api_config.api_cfg.id
+#   gateway_id = "api-gw"
 
-  depends_on = [google_api_gateway_api_config.api_cfg]
+#   depends_on = [google_api_gateway_api_config.api_cfg]
 
-}
+# }
 
 ## Service Accounts ##
 
