@@ -1,0 +1,678 @@
+# Converted specification to Swagger 2.0
+consumes:
+  - application/json
+definitions:
+  AuthenticationRequest:
+    description: ''
+    properties:
+      Secret:
+        $ref: '#/definitions/UserAuthenticationInfo'
+      User:
+        $ref: '#/definitions/User'
+    required:
+      - User
+      - Secret
+    type: object
+  AuthenticationToken:
+    description: >-
+      The spec permits you to use any token format you like. You could, for
+      example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+      https://jwt.io.
+    type: string
+  EnumerateOffset:
+    description: Offset in pagination.
+    example: '1'
+    type: string
+  Error:
+    properties:
+      code:
+        format: int32
+        type: integer
+      message:
+        type: string
+    required:
+      - code
+      - message
+  Package:
+    properties:
+      data:
+        $ref: '#/definitions/PackageData'
+      metadata:
+        $ref: '#/definitions/PackageMetadata'
+    required:
+      - metadata
+      - data
+    type: object
+  PackageData:
+    description: |-
+      This is a "union" type.
+      - On package upload, either Content or URL should be set.
+      - On package update, exactly one field should be set.
+      - On download, the Content field should be set.
+    properties:
+      Content:
+        description: >-
+          Package contents. This is the zip file uploaded by the user. (Encoded
+          as text using a Base64 encoding).
+
+
+          This will be a zipped version of an npm package's GitHub repository,
+          minus the ".git/" directory." It will, for example, include the
+          "package.json" file that can be used to retrieve the project homepage.
+
+
+          See
+          https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage.
+        type: string
+      JSProgram:
+        description: A JavaScript program (for use with sensitive modules).
+        type: string
+      URL:
+        description: Package URL (for use in public ingest).
+        type: string
+    type: object
+  PackageHistoryEntry:
+    description: One entry of the history of this package.
+    properties:
+      Action:
+        description: ''
+        enum:
+          - CREATE
+          - UPDATE
+          - DOWNLOAD
+          - RATE
+        type: string
+      Date:
+        description: Date of activity using ISO-8601 Datetime standard in UTC format.
+        example: '2023-03-23T23:11:15.000Z'
+        format: date-time
+        type: string
+      PackageMetadata:
+        $ref: '#/definitions/PackageMetadata'
+      User:
+        $ref: '#/definitions/User'
+    required:
+      - User
+      - Date
+      - PackageMetadata
+      - Action
+    type: object
+  PackageID:
+    description: ''
+    type: string
+  PackageMetadata:
+    description: >-
+      The "Name" and "Version" are used as a unique identifier pair when
+      uploading a package.
+
+
+      The "ID" is used as an internal identifier for interacting with existing
+      packages.
+    properties:
+      ID:
+        $ref: '#/definitions/PackageID'
+        description: 'Unique ID for use with the /package/{id} endpoint.'
+        example: '123567192081501'
+      Name:
+        $ref: '#/definitions/PackageName'
+        description: Package name
+        example: my-package
+      Version:
+        description: Package version
+        example: 1.2.3
+        type: string
+    required:
+      - Name
+      - Version
+      - ID
+    type: object
+  PackageName:
+    description: |-
+      Name of a package.
+
+      - Names should only use typical "keyboard" characters.
+      - The name "*" is reserved. See the `/packages` API for its meaning.
+    type: string
+  PackageQuery:
+    description: ''
+    properties:
+      Name:
+        $ref: '#/definitions/PackageName'
+      Version:
+        $ref: '#/definitions/SemverRange'
+    required:
+      - Name
+    type: object
+  PackageRating:
+    description: >-
+      Package rating (cf. Project 1).
+
+
+      If the Project 1 that you inherited does not support one or more of the
+      original properties, denote this with the value "-1".
+    properties:
+      BusFactor:
+        description: ''
+        format: double
+        type: number
+      Correctness:
+        description: ''
+        format: double
+        type: number
+      GoodPinningPractice:
+        description: >-
+          The fraction of its dependencies that are pinned to at least a
+          specific major+minor version, e.g. version 2.3.X of a package. (If
+          there are zero dependencies, they should receive a 1.0 rating. If
+          there are two dependencies, one pinned to this degree, then they
+          should receive a ├é┬╜ = 0.5 rating).
+        format: double
+        type: number
+      LicenseScore:
+        description: ''
+        format: double
+        type: number
+      NetScore:
+        description: From Part 1
+        format: double
+        type: number
+      PullRequest:
+        description: >-
+          The fraction of project code that was introduced through pull requests
+          with a code review.
+        format: double
+        type: number
+      RampUp:
+        description: ''
+        format: double
+        type: number
+      ResponsiveMaintainer:
+        description: ''
+        format: double
+        type: number
+    required:
+      - RampUp
+      - Correctness
+      - BusFactor
+      - ResponsiveMaintainer
+      - LicenseScore
+      - GoodPinningPractice
+      - PullRequest
+      - NetScore
+    type: object
+  PackageRegEx:
+    description: >-
+      A regular expression over package names and READMEs that is used for
+      searching for a package.
+    type: string
+  SemverRange:
+    description: ''
+    example: |-
+      Exact (1.2.3)
+      Bounded range (1.2.3-2.1.0)
+      Carat (^1.2.3)
+      Tilde (~1.2.0)
+    type: string
+  User:
+    description: ''
+    properties:
+      isAdmin:
+        description: Is this user an admin?
+        type: boolean
+      name:
+        description: ''
+        example: Alfalfa
+        type: string
+    required:
+      - name
+      - isAdmin
+    type: object
+  UserAuthenticationInfo:
+    description: Authentication info for a user
+    properties:
+      password:
+        description: 'Password for a user. Per the spec, this should be a "strong" password.'
+        type: string
+    required:
+      - password
+    type: object
+host: package-registry-461.appspot.com
+info:
+  contact:
+    email: davisjam@purdue.edu
+    name: Prof. Davis
+    url: 'http://davisjam.github.io'
+  description: 'API for ECE 461/Spring 2023/Project 2: A Trustworthy Module Registry'
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+  termsOfService: 'http://swagger.io/terms/'
+  title: ECE 461 - Spring 2023 - Project 2
+  version: 2.0.0
+paths:
+  "/authenticate":
+    put:
+      x-google-backend:
+        address: ${write_url}
+      description: Create an access token.
+      operationId: CreateAuthToken
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Return an AuthenticationToken.
+          schema:
+            $ref: '#/definitions/AuthenticationToken'
+        400:
+          description: >-
+            There is missing field(s) in the AuthenticationRequest or it is
+            formed improperly.
+        401:
+          description: The user or password is invalid.
+        501:
+          description: This system does not support authentication.
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/AuthenticationRequest'
+  "/package":
+    parameters:
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+    post:
+      x-google-backend:
+        address: ${write_url}
+      consumes:
+        - application/json
+      operationId: PackageCreate
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PackageData'
+      produces:
+        - application/json
+      responses:
+        201:
+          description: Success. Check the ID in the returned metadata for the official ID.
+          schema:
+            $ref: '#/definitions/Package'
+        400:
+          description: >-
+            There is missing field(s) in the PackageData/AuthenticationToken or
+            it is formed improperly, or the AuthenticationToken is invalid.
+        409:
+          description: Package exists already.
+        424:
+          description: Package is not uploaded due to the disqualified rating.
+  "/package/byName/{name}":
+    delete:
+      x-google-backend:
+        address: ${write_url}
+      operationId: PackageByNameDelete
+      parameters:
+        - description: |-
+            Name of a package.
+
+            - Names should only use typical "keyboard" characters.
+            - The name "*" is reserved. See the `/packages` API for its meaning.
+          in: path
+          name: name
+          required: true
+          type: string
+      responses:
+        200:
+          description: Package is deleted.
+        400:
+          description: >-
+            There is missing field(s) in the PackageName/AuthenticationToken or
+            it is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: Package does not exist.
+      summary: Delete all versions of this package.
+    get:
+      x-google-backend:
+        address: ${read_url}
+      description: Return the history of this package (all versions).
+      operationId: PackageByNameGet
+      parameters:
+        - description: >-
+            The spec permits you to use any token format you like. You could,
+            for example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+            https://jwt.io.
+          in: header
+          name: X-Authorization
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Return the package history.
+          schema:
+            items:
+              $ref: '#/definitions/PackageHistoryEntry'
+            type: array
+        400:
+          description: >-
+            There is missing field(s) in the PackageName/AuthenticationToken or
+            it is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: No such package.
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    parameters:
+      - description: |-
+          Name of a package.
+
+          - Names should only use typical "keyboard" characters.
+          - The name "*" is reserved. See the `/packages` API for its meaning.
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+  "/package/byRegEx":
+    parameters:
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+    post:
+      x-google-backend:
+        address: ${read_url}
+      consumes:
+        - application/json
+      description: >-
+        Search for a package using regular expression over package names and
+        READMEs. This is similar to search by name.
+      operationId: PackageByRegExGet
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PackageRegEx'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Return a list of packages.
+          schema:
+            items:
+              $ref: '#/definitions/PackageMetadata'
+            type: array
+        400:
+          description: >-
+            There is missing field(s) in the PackageRegEx/AuthenticationToken or
+            it is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: No package found under this regex.
+      summary: Get any packages fitting the regular expression.
+  "/package/{id}":
+    delete:
+      x-google-backend:
+        address: ${write_url}
+      operationId: PackageDelete
+      parameters:
+        - description: Package ID
+          in: path
+          name: id
+          required: true
+          type: string
+      responses:
+        200:
+          description: Package is deleted.
+        400:
+          description: >-
+            There is missing field(s) in the PackageID/AuthenticationToken or it
+            is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: Package does not exist.
+      summary: Delete this version of the package.
+    get:
+      x-google-backend:
+        address: ${read_url}
+      description: Return this package.
+      operationId: PackageRetrieve
+      parameters:
+        - description: ID of package to fetch
+          in: path
+          name: id
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Return the package.
+          schema:
+            $ref: '#/definitions/Package'
+        400:
+          description: >-
+            There is missing field(s) in the PackageID/AuthenticationToken or it
+            is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: Package does not exist.
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Interact with the package with this ID
+    parameters:
+      - description: Package ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+    put:
+      x-google-backend:
+        address: ${write_url}
+      consumes:
+        - application/json
+      description: >-
+        The name, version, and ID must match.
+
+
+        The package contents (from PackageData) will replace the previous
+        contents.
+      operationId: PackageUpdate
+      parameters:
+        - description: ''
+          in: path
+          name: id
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/Package'
+           
+      responses:
+        200:
+          description: Version is updated.
+        400:
+          description: >-
+            There is missing field(s) in the PackageID/AuthenticationToken or it
+            is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: Package does not exist.
+      summary: Update this content of the package.
+  "/package/{id}/rate":
+    get:
+      x-google-backend:
+        address: ${read_url}
+      operationId: PackageRate
+      parameters: []
+      produces:
+        - application/json
+      responses:
+        200:
+          description: >-
+            Return the rating. Only use this if each metric was computed
+            successfully.
+          schema:
+            $ref: '#/definitions/PackageRating'
+        400:
+          description: >-
+            There is missing field(s) in the PackageID/AuthenticationToken or it
+            is formed improperly, or the AuthenticationToken is invalid.
+        404:
+          description: Package does not exist.
+        500:
+          description: The package rating system choked on at least one of the metrics.
+    parameters:
+      - in: path
+        name: id
+        required: true
+        type: string
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+  "/packages":
+    parameters:
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+    post:
+      x-google-backend:
+        address: ${read_url}
+      consumes:
+        - application/json
+      description: >-
+        Get any packages fitting the query.
+
+        Search for packages satisfying the indicated query.
+
+
+        If you want to enumerate all packages, provide an array with a single
+        PackageQuery whose name is "*".
+
+
+        The response is paginated; the response header includes the offset to
+        use in the next query.
+      operationId: PackagesList
+      parameters:
+        - description: >-
+            Provide this for pagination. If not provided, returns the first page
+            of results.
+          in: query
+          name: offset
+          required: false
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/definitions/PackageQuery'
+      produces:
+        - application/json
+      responses:
+        200:
+          description: List of packages
+          schema:
+            items:
+              $ref: '#/definitions/PackageMetadata'
+            type: array
+        400:
+          description: >-
+            There is missing field(s) in the PackageQuery/AuthenticationToken or
+            it is formed improperly, or the AuthenticationToken is invalid.
+        413:
+          description: Too many packages returned.
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+      summary: Get the packages from the registry.
+  "/reset":
+    delete:
+      x-google-backend:
+        address: ${write_url}
+      description: Reset the registry to a system default state.
+      operationId: RegistryReset
+      parameters: []
+      responses:
+        200:
+          description: Registry is reset.
+        400:
+          description: >-
+            There is missing field(s) in the AuthenticationToken or it is formed
+            improperly, or the AuthenticationToken is invalid.
+        401:
+          description: You do not have permission to reset the registry.
+      summary: Reset the registry
+    parameters:
+      - description: >-
+          The spec permits you to use any token format you like. You could, for
+          example, look into JSON Web Tokens ("JWT", pronounced "jots"):
+          https://jwt.io.
+        in: header
+        name: X-Authorization
+        required: true
+        type: string
+produces:
+  - application/json
+schemes:
+  - http
+securityDefinitions:
+  UserAndPasswordYieldsToken:
+    description: Use the /authentication endpoint to obtain an authorization token.
+    in: header
+    name: X-Authorization
+    type: apiKey
+swagger: '2.0'
+x-components: {}
